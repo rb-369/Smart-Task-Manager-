@@ -5,6 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 require("./database/db");
+require("dotenv").config();
 
 const userRoutes = require("./routes/user-routes");
 const taskRoutes = require("./routes/task-routes")
@@ -32,7 +33,9 @@ app.use("/api", (req, res)=>{
     })
 })
 
-app.listen(5000, ()=>{
+const port = process.env.PORT;
+
+app.listen(port, ()=>{
     console.log(`App is Running on port 5000`);
     
 })
