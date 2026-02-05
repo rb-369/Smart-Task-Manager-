@@ -31,24 +31,53 @@ function TaskManagerProvider({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
 
+// useEffect(() => {
+//     const verifyUserCookie = async () => {
+//         const data = await callUserAuthApi();
+
+//         if (data?.success && data?.curUserInfo) {
+//             setUser(data.curUserInfo);
+
+//             // ✅ Only redirect when on auth or root
+//             if (location.pathname === "/auth" || location.pathname === "/") {
+//                 navigate("/tasks/list");
+//             }
+//         } else {
+//             navigate("/auth");
+//         }
+//     };
+
+//     verifyUserCookie();
+// }, [navigate, location.pathname]);
+
 useEffect(() => {
     const verifyUserCookie = async () => {
-        const data = await callUserAuthApi();
+        try {
+            const data = await callUserAuthApi();
 
-        if (data?.success && data?.curUserInfo) {
-            setUser(data.curUserInfo);
+            if (data?.success && data?.curUserInfo) {
+                setUser(data.curUserInfo);
 
-            // ✅ Only redirect when on auth or root
-            if (location.pathname === "/auth" || location.pathname === "/") {
-                navigate("/tasks/list");
+                if (location.pathname === "/auth" || location.pathname === "/") {
+                    navigate("/tasks/list");
+                }
+            } else {
+                // 🔴 only force auth page if user tries protected route
+                if (location.pathname.startsWith("/tasks")) {
+                    navigate("/auth");
+                }
             }
-        } else {
-            navigate("/auth");
+
+        } catch (err) {
+            if (location.pathname.startsWith("/tasks")) {
+                navigate("/auth");
+            }
         }
     };
 
     verifyUserCookie();
-}, [navigate, location.pathname]);
+}, [location.pathname]);
+
 
     return <TaskManagerContext.Provider value={{
         user,
