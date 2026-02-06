@@ -21,44 +21,44 @@ function StatsPage() {
     const userId = user?._id;
 
     useEffect(() => {
-    let isMounted = true;
+        let isMounted = true;
 
-    async function fetchListOfTasks() {
-        setLoading(true);
-        try {
-            const response = await getAllTasksApi(userId);
+        async function fetchListOfTasks() {
+            setLoading(true);
+            try {
+                const response = await getAllTasksApi(userId);
 
-            if (!isMounted) return;
+                if (!isMounted) return;
 
-            if (response?.success) {
-                setTaskList(Array.isArray(response.data) ? response.data : []);
-            } else {
-                setTaskList([]); // 🔥 important
-            }
-        } catch (error) {
-            console.error("Failed to fetch tasks:", error);
-            if (isMounted) {
-                setTaskList([]);
-            }
-        } finally {
-            if (isMounted) {
-                setLoading(false); // 🔥 ALWAYS runs
+                if (response?.success) {
+                    setTaskList(Array.isArray(response.data) ? response.data : []);
+                } else {
+                    setTaskList([]); // 🔥 important
+                }
+            } catch (error) {
+                console.error("Failed to fetch tasks:", error);
+                if (isMounted) {
+                    setTaskList([]);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false); // 🔥 ALWAYS runs
+                }
             }
         }
-    }
 
-    if (userId) {
-        fetchListOfTasks();
-    } else {
-        // 🔥 user logged out / switched
-        setTaskList([]);
-        setLoading(false);
-    }
+        if (userId) {
+            fetchListOfTasks();
+        } else {
+            // 🔥 user logged out / switched
+            setTaskList([]);
+            setLoading(false);
+        }
 
-    return () => {
-        isMounted = false;
-    };
-}, [userId]);
+        return () => {
+            isMounted = false;
+        };
+    }, [userId]);
 
 
     /* ================= SAFE LIST ================= */
@@ -91,46 +91,61 @@ function StatsPage() {
         if (timing === "late") completedLateCount++;
     });
 
-    /* ================= STREAK LOGIC (FINAL – BUG FREE) 🔥 ================= */
+    /* ================= STREAK LOGIC (100% CORRECT) 🔥 ================= */
 
-    // Use ONLY completedAt
+    // Use completedAt ONLY
     const completedTasksWithDate = safeTaskList.filter(
         t => t.status === "done" && t.completedAt
     );
 
-    // Build set of completion days (YYYY-MM-DD)
+    // Build a SET of normalized day timestamps (midnight)
     const completedDaySet = new Set(
-        completedTasksWithDate.map(task =>
-            new Date(task.completedAt).toLocaleDateString("en-CA")
-        )
+        completedTasksWithDate.map(task => {
+            const d = new Date(task.completedAt);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+        })
     );
 
-    // ===== CURRENT STREAK (only from today backwards) =====
+    // ===== CURRENT STREAK (STRICT, TODAY-ONLY START) =====
     let onTimeStreak = 0;
-    let cursor = new Date();
 
-    while (true) {
-        const key = cursor.toLocaleDateString("en-CA");
+    // normalize today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        if (completedDaySet.has(key)) {
-            onTimeStreak++;
-            cursor.setDate(cursor.getDate() - 1);
-        } else {
-            break; // 🔴 STOP at first missed day
+    // 🔴 IMPORTANT: if today is NOT completed → streak = 0
+    if (completedDaySet.has(today.getTime())) {
+        onTimeStreak = 1;
+
+        let cursor = new Date(today);
+        cursor.setDate(cursor.getDate() - 1);
+
+        while (true) {
+            const prevDay = new Date(cursor);
+            prevDay.setDate(prevDay.getDate() - 1);
+
+            if (
+                completedDaySet.has(prevDay.getTime()) &&
+                cursor.getTime() - prevDay.getTime() === 86400000
+            ) {
+                onTimeStreak++;
+                cursor = prevDay;
+            } else {
+                break;
+            }
         }
+
     }
 
-    // ===== LONGEST STREAK (historical, but safe) =====
-    const completedDays = [...completedDaySet].sort();
+    // ===== LONGEST STREAK (historical) =====
+    const completedDays = [...completedDaySet].sort((a, b) => a - b);
 
     let longestOnTimeStreak = 0;
     let currentStreak = 0;
 
     for (let i = 0; i < completedDays.length; i++) {
-        if (
-            i === 0 ||
-            new Date(completedDays[i]) - new Date(completedDays[i - 1]) === 86400000
-        ) {
+        if (i === 0 || completedDays[i] - completedDays[i - 1] === 86400000) {
             currentStreak++;
         } else {
             currentStreak = 1;
@@ -200,7 +215,7 @@ function StatsPage() {
 
     const weeklyCompletionData = last7Days.map(date => {
         const count = completedTasks.filter(task => {
-            const completed = new Date(task.updatedAt);
+            const completed = new Date(task.completedAt);
             completed.setHours(0, 0, 0, 0);
             return completed.getTime() === date.getTime();
         }).length;
@@ -210,7 +225,7 @@ function StatsPage() {
             value: count,
         };
     });
-
+    //eg
     /* ================= MONTHLY ANALYTICS 📆 ================= */
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
@@ -218,7 +233,7 @@ function StatsPage() {
     const monthlyBuckets = {};
 
     completedTasks.forEach(task => {
-        const d = new Date(task.updatedAt);
+        const d = new Date(task.completedAt);
         if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
             const week = Math.ceil(d.getDate() / 7);
             const key = `Week ${week}`;

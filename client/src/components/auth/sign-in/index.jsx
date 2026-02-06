@@ -9,6 +9,9 @@ import { useNavigate } from "react-router-dom";
 
 function SignIn() {
 
+    const { setUser } = useContext(TaskManagerContext);
+
+
     const formData = useForm({
         defaultValues: {
             email: "",
@@ -27,6 +30,9 @@ function SignIn() {
             console.log(data, "data");
 
             if (data?.success) {
+
+                setUser(data.data);   // ✅ VERY IMPORTANT
+                
                 console.log("User Logged successfully");
                 toast({
                     title: `User ${data?.data?.name} logged in successfully`,

@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 
 function SignUp() {
 
+    const { setUser } = useContext(TaskManagerContext);
+
     const formData = useForm({
         defaultValues: {
             name: "",
@@ -29,6 +31,7 @@ function SignUp() {
             console.log(data, "data");
             
             if (data?.success) {
+                setUser(data.data);   // ✅ VERY IMPORTANT
                 console.log("User registered successfully");
                 toast({
                     title: `User ${data?.data?.name} registered successfully`,
