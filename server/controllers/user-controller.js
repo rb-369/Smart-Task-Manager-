@@ -169,24 +169,17 @@ const loginUser = async (req, res, next) => {
     }
 }
 
-const logoutUser = async (req, res, next) => {
+const logoutUser = async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+  });
 
-    // res.cookie("token", "", {
-    //     withCredentials: true,
-    //     httpOnly: false
-    // })
+  return res.status(200).json({
+    success: true,
+    message: "User logged out successfully"
+  });
+};
 
-    res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
-    });
-
-
-    return res.status(200).json({
-        success: true,
-        message: `User logged out Successfully!`
-    })
-
-}
 module.exports = { registerUser, loginUser, logoutUser }
