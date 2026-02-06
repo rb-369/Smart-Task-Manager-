@@ -4,7 +4,7 @@ import { toast, useToast } from "@/hooks/use-toast";
 import { callRegisterUserApi } from "@/services";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-
+import { useContext } from "react";
 
 function SignUp() {
 
