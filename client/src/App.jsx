@@ -16,7 +16,11 @@ function App() {
   return (
     <div>
       
+
       <Routes>
+
+        <Route path="/" element={<Navigate to="/auth" replace />} />
+        
         <Route path="/auth" element={<AuthPage/>}/>
         {/* <Route path='/tasks' element={<TaskPage/>}/> */}
         
