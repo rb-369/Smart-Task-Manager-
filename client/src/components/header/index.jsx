@@ -102,30 +102,22 @@ function HeaderComp() {
                         </div>
                     </div>
 
-                    {/* Center navigation (same links – only layout) */}
-                    <nav className="flex items-center gap-10">
-                        <Link to="/tasks/list">
-                            <p className="text-[15px] font-semibold text-gray-700 hover:text-indigo-600 transition">
-                                Tasks
-                            </p>
+                    {/* ✅ Center navigation */}
+                    <nav className="flex gap-8">
+                        <Link to="/tasks/list" className="font-semibold hover:text-blue-600">
+                            <p className="text-black text-xl font-bold">Tasks</p>
                         </Link>
 
-                        <Link to="/tasks/scrum-board">
-                            <p className="text-[15px] font-semibold text-gray-700 hover:text-indigo-600 transition">
-                                Scrum Board
-                            </p>
+                        <Link to="/tasks/scrum-board" className="font-semibold hover:text-blue-600">
+                            <p className="text-black text-xl font-bold">Scrum Board</p>
                         </Link>
 
-                        <Link to="/tasks/info">
-                            <p className="text-[15px] font-semibold text-gray-700 hover:text-indigo-600 transition">
-                                Color Pattern
-                            </p>
+                        <Link to="/tasks/info" className="font-semibold hover:text-blue-600">
+                            <p className="text-black text-xl font-bold">Color Pattern</p>
                         </Link>
 
-                        <Link to="/tasks/stats">
-                            <p className="text-[15px] font-semibold text-gray-700 hover:text-indigo-600 transition">
-                                Stats
-                            </p>
+                        <Link to="/tasks/stats" className="font-semibold hover:text-blue-600">
+                            <p className="text-black text-xl font-bold">Stats</p>
                         </Link>
                     </nav>
 
