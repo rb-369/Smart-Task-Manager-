@@ -106,8 +106,6 @@ useEffect(() => {
   verifyUserCookie();
 }, [location.pathname]);
 
-
-
     return <TaskManagerContext.Provider value={{
         user,
         setUser,

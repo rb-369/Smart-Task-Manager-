@@ -25,7 +25,7 @@ function HeaderComp() {
             <div className=" container mx-auto h-16">
                 <div className="flex h-[64px] items-center w-full justify-between">
                     <div className="w-auto ">
-                        <h2 className="">Welcome to Task Manager {user?.name}</h2>
+                        <h2 className="">Welcome to RB's Smart Task Manager {user?.name}</h2>
                     </div>
                     <div className="flex gap-4">
                     <Link to={"/tasks/list"}><p className="text-black text-xl font-bold">Tasks</p></Link>
