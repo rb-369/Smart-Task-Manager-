@@ -30,7 +30,7 @@ function HeaderComp() {
                         <img
                             src={logo}
                             alt="RB's Smart Task Manager"
-                            className="h-9 w-9 object-contain"
+                            className="h-16 w-16 object-contain"
                         />
 
                         <div className="flex flex-col leading-tight">
