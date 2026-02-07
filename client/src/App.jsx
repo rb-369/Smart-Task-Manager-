@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import './App.css'
 import AuthPage from './pages/auth'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import TaskPage from './pages/task'
 import ScrumBoardPage from './pages/scrum-board'
 import CommonLayout from './components/common-layout'
@@ -15,12 +15,10 @@ function App() {
 
   return (
     <div>
-      
-
       <Routes>
 
         <Route path="/" element={<Navigate to="/auth" replace />} />
-        
+
         <Route path="/auth" element={<AuthPage/>}/>
         {/* <Route path='/tasks' element={<TaskPage/>}/> */}
         
