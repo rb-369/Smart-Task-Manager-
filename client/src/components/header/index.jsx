@@ -46,19 +46,19 @@ function HeaderComp() {
                     {/* ✅ Center navigation */}
                     <nav className="flex gap-8">
                         <Link to="/tasks/list" className="font-semibold hover:text-blue-600">
-                            Tasks
+                            <p className="text-black text-xl font-bold">Tasks</p>
                         </Link>
 
                         <Link to="/tasks/scrum-board" className="font-semibold hover:text-blue-600">
-                            Scrum Board
+                            <p className="text-black text-xl font-bold">Scrum Board</p>
                         </Link>
 
                         <Link to="/tasks/info" className="font-semibold hover:text-blue-600">
-                            Color Pattern
+                            <p className="text-black text-xl font-bold">Color Pattern</p>
                         </Link>
 
                         <Link to="/tasks/stats" className="font-semibold hover:text-blue-600">
-                            Stats
+                            <p className="text-black text-xl font-bold">Stats</p>
                         </Link>
                     </nav>
 
