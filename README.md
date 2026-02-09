@@ -1,244 +1,442 @@
-🧠 Smart Task Manager – MERN Stack Project
+# 🧠 Smart Task Manager – Full-Stack MERN Application
 
-A full-stack Smart Task Manager web application built using the MERN stack that helps users manage daily tasks, track progress using a scrum board, view analytics, and maintain productivity streaks.
+A comprehensive, production-ready task management application built with the **MERN Stack** (MongoDB, Express.js, React, Node.js). Features real-time task tracking, beautiful Scrum board with drag-and-drop, advanced analytics, email notifications, and productivity streak tracking.
 
-This project is designed as a complete real-world full-stack application for learning and deployment practice.
+Perfect for learning full-stack development and deploying production-grade applications.
 
-🚀 Live Project
+---
 
-Frontend (Vercel)
-👉 https://smart-task-manager-sl4a.vercel.app
+## 🚀 Live Demo
 
-Backend API (Railway)
-👉 https://smart-task-manager-production.up.railway.app
+| Component | URL |
+|-----------|-----|
+| **Frontend** | [https://smart-task-manager-sl4a.vercel.app](https://smart-task-manager-sl4a.vercel.app) |
+| **Backend API** | [https://smart-task-manager-production.up.railway.app](https://smart-task-manager-production.up.railway.app) |
 
-📌 Features
-✅ Authentication
+---
 
-User registration
+## ✨ Key Features
 
-User login
+### 🔐 **Authentication & Security**
+- ✅ User registration with validation
+- ✅ Secure login with JWT tokens
+- ✅ Cookie-based session management
+- ✅ Protected routes and API endpoints
+- ✅ Secure logout with token cleanup
 
-Secure authentication using JWT & cookies
+### 📝 **Task Management**
+- ✅ Create, edit, and delete tasks
+- ✅ View detailed task information
+- ✅ Set task priorities (Low, Medium, High)
+- ✅ Add due dates with date picker
+- ✅ Task descriptions and notes
+- ✅ Search and filter tasks by status/priority
 
-Logout functionality
+### 🎯 **Task Status Workflow**
+- ✅ **To Do** - New tasks
+- ✅ **In Progress** - Active work
+- ✅ **Blocked** - Waiting on dependencies
+- ✅ **Review** - Ready for approval
+- ✅ **Done** - Completed tasks
 
-✅ Task Management
+### 📊 **Scrum Board (Kanban Style)**
+- ✅ Drag-and-drop task management
+- ✅ Real-time status updates
+- ✅ Visual task cards with priority colors
+- ✅ Task count per column
+- ✅ Responsive grid layout
 
-Create new tasks
+### 📈 **Advanced Analytics Dashboard**
+- ✅ Task completion statistics
+- ✅ Status distribution pie chart
+- ✅ Completion timing analysis (Early/On-time/Late)
+- ✅ Weekly completion trends
+- ✅ Monthly performance charts
+- ✅ Interactive Recharts visualizations
+- ✅ Current and longest streak tracking
 
-Edit tasks
+### 🔥 **Productivity Streak System**
+- ✅ Daily task completion tracking
+- ✅ Current streak counter
+- ✅ Longest streak history
+- ✅ Automatic streak calculations
+- ✅ Visual streak indicators
 
-Delete tasks
+### 📧 **Email Notifications**
+- ✅ SendGrid integration for reliable email delivery
+- ✅ Daily task reminders (configurable time with timezone support)
+- ✅ Overdue task alerts
+- ✅ Due today notifications
+- ✅ Beautiful HTML email templates
+- ✅ Automatic scheduling with node-cron
 
-View task details
+### 🌙 **Dark Mode & UI/UX**
+- ✅ Full dark mode support with smooth transitions
+- ✅ Improved button designs with gradients
+- ✅ Better contrast and visibility in dark mode
+- ✅ Responsive design for all screen sizes
+- ✅ Modern component styling with Tailwind CSS
+- ✅ Accessible color schemes
 
-✅ Task Status Flow
+---
 
-To Do
+## 🛠 Tech Stack
 
-In Progress
+### **Frontend**
+| Technology | Purpose |
+|-----------|---------|
+| React 18+ | UI library |
+| Vite | Fast build tool |
+| React Router DOM | Client-side routing |
+| React Hook Form | Form management |
+| Tailwind CSS | Styling & dark mode |
+| Recharts | Charts & graphs |
+| Axios | HTTP client |
+| Radix UI | Component primitives |
+| Lucide Icons | Icons library |
 
-Review
+### **Backend**
+| Technology | Purpose |
+|-----------|---------|
+| Node.js | JavaScript runtime |
+| Express.js | Web framework |
+| MongoDB | NoSQL database |
+| Mongoose | ODM for MongoDB |
+| JWT | Token authentication |
+| SendGrid | Email service |
+| node-cron | Task scheduling |
+| dotenv | Environment management |
+| Cookie-parser | Cookie handling |
 
-Blocked
+### **Deployment**
+| Service | Component |
+|---------|-----------|
+| **Vercel** | Frontend hosting |
+| **Railway** | Backend hosting |
+| **MongoDB Atlas** | Cloud database |
+| **SendGrid** | Email API |
 
-Done
+---
 
-✅ Scrum Board (Drag & Drop)
+## 📁 Project Structure
 
-Drag tasks between columns
-
-Automatically updates task status
-
-✅ Due Date & Priority
-
-Task due date
-
-Task priority (low / medium / high)
-
-✅ Productivity Analytics
-
-Completed task count
-
-Early / on-time / late completion
-
-Weekly and monthly analytics
-
-Charts using Recharts
-
-✅ Streak System
-
-Daily completion streak
-
-Longest streak tracking
-
-✅ Responsive UI
-
-Works on all screen sizes
-
-🛠 Tech Stack
-Frontend
-
-React (Vite)
-
-React Router DOM
-
-React Hook Form
-
-Tailwind CSS
-
-Recharts
-
-Axios
-
-Backend
-
-Node.js
-
-Express.js
-
-MongoDB
-
-Mongoose
-
-JWT Authentication
-
-Cookie based auth
-
-Joi validation
-
-Deployment
-
-Frontend → Vercel
-
-Backend → Railway
-
-Database → MongoDB Atlas
-
-📂 Project Structure
-MERN-Stack-Task-App
+```
+Smart-Task-Manager/
 │
-├── client     → React frontend (Vite)
-└── server     → Node + Express backend
+├── client/                          # React Frontend (Vite)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── auth/               # Login/Register
+│   │   │   ├── tasks/              # Task components
+│   │   │   ├── common-button/      # Button component
+│   │   │   ├── common-dialog/      # Modal dialogs
+│   │   │   ├── common-form/        # Form wrapper
+│   │   │   ├── header/             # Navigation
+│   │   │   ├── ui/                 # UI primitives
+│   │   │   └── helper/             # Utilities
+│   │   ├── pages/
+│   │   │   ├── auth/               # Auth pages
+│   │   │   ├── task/               # Task list
+│   │   │   ├── task-details/       # Task details
+│   │   │   ├── scrum-board/        # Kanban board
+│   │   │   └── stats/              # Analytics
+│   │   ├── context/                # React Context
+│   │   ├── services/               # API calls
+│   │   ├── config/                 # Config
+│   │   └── App.jsx
+│   └── package.json
+│
+├── server/                          # Node/Express Backend
+│   ├── models/
+│   │   ├── Task.js
+│   │   └── user.js
+│   ├── routes/
+│   │   ├── user-routes.js
+│   │   ├── task-routes.js
+│   │   └── notification-routes.js
+│   ├── controllers/
+│   │   ├── user-controller.js
+│   │   ├── task-controller.js
+│   │   └── notification-controller.js
+│   ├── services/
+│   │   └── notification-scheduler.js
+│   ├── utils/
+│   │   ├── email.js
+│   │   └── database.js
+│   ├── middlewares/
+│   │   └── auth-middleware.js
+│   ├── index.js
+│   └── package.json
+│
+└── README.md
+```
 
-⚙️ Environment Variables
+---
 
-Create a .env file inside the server folder.
+## 🚀 Getting Started
 
-MONGO_URL=your_mongodb_connection_string
-PORT=5000
-NODE_ENV=production
+### **Prerequisites**
+- Node.js (v16+)
+- npm or yarn
+- MongoDB account (Atlas)
+- SendGrid API key
 
-▶️ Run Locally
-1️⃣ Clone the repository
+### **1️⃣ Clone Repository**
+```bash
 git clone https://github.com/rb-369/Smart-Task-Manager-
-
 cd Smart-Task-Manager-
+```
 
-2️⃣ Start backend
+### **2️⃣ Setup Backend**
+```bash
 cd server
 npm install
-npm run dev
+```
 
-3️⃣ Start frontend
-cd client
+Create `.env` file:
+```env
+PORT=5000
+MONGO_URL=your_mongodb_atlas_connection_string
+SENDGRID_API_KEY=your_sendgrid_api_key
+SENDER_EMAIL=your_sender_email@example.com
+TZ=Asia/Kolkata
+NODE_ENV=development
+```
+
+Start backend:
+```bash
+npm run dev
+```
+**Backend runs at:** `http://localhost:5000`
+
+### **3️⃣ Setup Frontend**
+```bash
+cd ../client
 npm install
 npm run dev
+```
+**Frontend runs at:** `http://localhost:5173`
 
+---
 
-Frontend will run at:
+## 📧 Email Notifications Setup
 
-http://localhost:5173
+### **SendGrid Configuration**
+1. Create account at [SendGrid](https://sendgrid.com)
+2. Generate API key from Settings → API Keys
+3. Copy to `.env`:
+   ```env
+   SENDGRID_API_KEY=SG.xxxxxxxxxxxxx
+   SENDER_EMAIL=notifications@yourdomain.com
+   ```
 
+### **Email Features**
+- **Daily Reminders:** Sent at 9:00 AM (configurable)
+- **Overdue Tasks:** Lists all overdue items
+- **Due Today:** Shows tasks due today
+- **HTML Templates:** Professional formatting
+- **Timezone Support:** Set `TZ` environment variable
 
-Backend will run at:
+### **Manual Testing**
+Test notifications immediately:
+```bash
+POST /api/notification/trigger-reminders
+```
 
-http://localhost:5000
+---
 
-🔐 Authentication Flow
+## 🔐 Authentication & Security
 
-JWT token is stored securely in cookies.
+### **Authentication Flow**
+```
+User Login
+    ↓
+JWT Token Generated
+    ↓
+Token Stored in Secure Cookies
+    ↓
+Backend Validates Each Request
+    ↓
+Access to Protected Routes & APIs
+```
 
-Backend validates user using cookie based authentication.
+### **Protected Resources**
+- Dashboard (requires login)
+- Task management (requires login)
+- Analytics (requires login)
+- Profile settings (requires login)
 
-Protected routes are handled using a global React context.
+---
 
-📊 Analytics Module
+## 📊 API Endpoints
 
-The analytics dashboard provides:
+### **Authentication** 🔐
+```
+POST   /api/user/register          # User registration
+POST   /api/user/login             # User login
+POST   /api/user/auth              # Check authentication
+POST   /api/user/logout            # User logout
+```
 
-Status distribution
+### **Tasks** 📝
+```
+POST   /api/tasks/add              # Create new task
+GET    /api/tasks/get/:userId      # Get all user tasks
+GET    /api/tasks/get-details/:id  # Get single task
+PUT    /api/tasks/update           # Update task
+DELETE /api/tasks/del/:taskId      # Delete task
+```
 
-Completion timing (early / on time / late)
+### **Notifications** 📧
+```
+POST   /api/notification/send-test        # Send test email
+POST   /api/notification/trigger-reminders # Trigger daily reminders
+```
 
-Weekly completion chart
+---
 
-Monthly trend chart
+## 🎨 UI Features
 
-Current and longest streak
+### **Dark Mode**
+- ✅ System-wide dark theme
+- ✅ Smooth transitions
+- ✅ Improved contrast
+- ✅ Persistent preference
 
-📦 API Endpoints (Main)
-Auth
-POST   /api/user/register
-POST   /api/user/login
-POST   /api/user/auth
-POST   /api/user/logout
+### **Responsive Design**
+- ✅ Mobile-first approach
+- ✅ All screen sizes
+- ✅ Touch-friendly
+- ✅ Optimized performance
 
-Tasks
-POST   /api/tasks/add
-GET    /api/tasks/get/:userId
-GET    /api/tasks/get-details/:taskId
-PUT    /api/tasks/update
-DELETE /api/tasks/del/:taskId
+### **Visual Enhancements**
+- ✅ Gradient buttons
+- ✅ Color-coded tasks
+- ✅ Smooth animations
+- ✅ Custom scrollbars
+- ✅ Accessible colors
 
-🌍 Deployment Architecture
+---
 
-Frontend is deployed on Vercel
+## 🧪 Testing Workflow
 
-Backend is deployed on Railway
+### **Email Notifications**
+1. Create task with due date = today or earlier
+2. Mark task as incomplete
+3. Call: `POST /api/notification/trigger-reminders`
+4. Check email inbox
 
-MongoDB is hosted on MongoDB Atlas
+### **Drag & Drop**
+1. Go to Scrum Board
+2. Drag tasks between columns
+3. Verify real-time status updates
 
-Frontend communicates with backend using Axios and CORS enabled API
+### **Analytics**
+1. Complete multiple tasks
+2. View Stats page
+3. Check streaks and charts
 
-🎯 Learning Outcomes
+---
 
-This project helped in learning:
+## 🚢 Deployment
 
-Full-stack MERN architecture
+### **Frontend (Vercel)**
+```bash
+cd client
+npm run build
+# Deploy via Vercel CLI or GitHub
+```
 
-Authentication using JWT and cookies
+### **Backend (Railway)**
+```bash
+# Connect Railway to GitHub
+# Set env variables in Railway dashboard
+# Auto-deploy on push
+```
 
-Context based state management
+### **Required Environment Variables**
+- `MONGO_URL` - MongoDB Atlas
+- `SENDGRID_API_KEY` - SendGrid
+- `SENDER_EMAIL` - Notification sender
+- `TZ` - Timezone (e.g., Asia/Kolkata)
+- `NODE_ENV` - production/development
 
-REST API design
+---
 
-Real-world deployment
+## 📚 Learning Outcomes
 
-CORS handling
+This project covers essential full-stack concepts:
 
-Analytics dashboards
+- ✅ **MERN Stack** - Complete implementation
+- ✅ **Authentication** - JWT + Cookie-based
+- ✅ **State Management** - React Context API
+- ✅ **REST APIs** - Design & implementation
+- ✅ **Database Design** - MongoDB schemas
+- ✅ **Email Service** - SendGrid integration
+- ✅ **Task Scheduling** - Cron jobs
+- ✅ **Cloud Deployment** - Vercel & Railway
+- ✅ **UI/UX Design** - Tailwind CSS
+- ✅ **Real-time Updates** - Instant status changes
+- ✅ **Data Visualization** - Charts with Recharts
+- ✅ **Error Handling** - Comprehensive management
+- ✅ **Security** - JWT, CORS, validation
+- ✅ **Performance** - Optimization techniques
 
-Drag and drop UI design
+---
 
-Environment variable management
+## 🤝 Contributing
 
-👨‍💻 Developed By
+Contributions welcome! To contribute:
 
-Rudra Babar(rb-369)
-Diploma in Computer Engineering
+1. Fork repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-⭐ Future Improvements
+---
 
-Task reminders
+## 📄 License
 
-Email notifications
+MIT License - Open source project
 
-Team based boards
+---
 
-Role based access
+## 👨‍💻 Author
 
-Dark mode
+**Rudra Babar** (rb-369)
+- Diploma in Computer Engineering
+- Full-stack developer
+- Passionate about building scalable applications
 
-Search & filter tasks
+---
+
+## ⭐ Support
+
+If you found this project helpful, please consider giving it a **⭐ on GitHub!**
+
+---
+
+## 📞 Support & Feedback
+
+For issues, bugs, or feature requests, please open an issue on GitHub.
+
+---
+
+## 🎯 Future Roadmap
+
+- [ ] Real-time collaboration
+- [ ] Task comments & mentions
+- [ ] Team management with roles
+- [ ] Task templates
+- [ ] Mobile app (React Native)
+- [ ] WebSocket for live updates
+- [ ] Offline mode with sync
+- [ ] Advanced filtering
+- [ ] Task dependencies
+- [ ] Time tracking
+
+---
+
+**Happy Task Managing! 🚀**
+

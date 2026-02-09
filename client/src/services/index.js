@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:5000";
+const API = "https://smart-task-manager-production.up.railway.app";
 
 export const callRegisterUserApi = async (formData) => {
   const response = await axios.post(
