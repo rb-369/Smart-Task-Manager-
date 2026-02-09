@@ -77,9 +77,11 @@ const registerUser = async (req, res, next) => {
 
 
                 return res.status(201).json({
+                    token: token,
                     success: true,
                     message: "New User Registered Successfully!",
-                    data: newUser
+                    data: newUser,
+
                 })
 
                 next();
@@ -153,9 +155,11 @@ const loginUser = async (req, res, next) => {
 
 
         return res.status(200).json({
+            token: token,
             success: true,
             message: `User ${curUser?.name} Logged in Successfully!`,
-            data: curUser
+            data: curUser,
+
         })
 
         next();
@@ -170,16 +174,16 @@ const loginUser = async (req, res, next) => {
 }
 
 const logoutUser = async (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
-  });
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+    });
 
-  return res.status(200).json({
-    success: true,
-    message: "User logged out successfully"
-  });
+    return res.status(200).json({
+        success: true,
+        message: "User logged out successfully"
+    });
 };
 
 module.exports = { registerUser, loginUser, logoutUser }

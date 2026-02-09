@@ -1,6 +1,6 @@
 import { TaskManagerContext } from "@/context";
 import { callLogoutUserApi } from "@/services";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -8,7 +8,7 @@ import logo from "@/assets/logo5.png";
 
 function HeaderComp() {
 
-    const { user, setUser } = useContext(TaskManagerContext);
+    const { user, setUser, darkMode, toggleDarkMode } = useContext(TaskManagerContext);
     const navigate = useNavigate();
 
     async function hadleLogout() {
@@ -76,9 +76,9 @@ function HeaderComp() {
     // );
 
     //better header
-    
+
     return (
-        <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200">
+        <header className="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/95 backdrop-blur border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <div className="container mx-auto px-6">
                 <div className="flex h-20 items-center justify-between">
 
@@ -93,10 +93,10 @@ function HeaderComp() {
                         </div>
 
                         <div className="flex flex-col">
-                            <span className="text-xl font-bold tracking-tight text-gray-900">
+                            <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
                                 RB's Smart Task Manager
                             </span>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
                                 Welcome, {user?.name}
                             </span>
                         </div>
@@ -104,30 +104,45 @@ function HeaderComp() {
 
                     {/* ✅ Center navigation */}
                     <nav className="flex gap-8">
-                        <Link to="/tasks/list" className="font-semibold hover:text-blue-600">
-                            <p className="text-black text-xl font-bold">Tasks</p>
+                        <Link to="/tasks/list" className="font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            <p className="text-foreground text-xl font-bold">Tasks</p>
                         </Link>
 
-                        <Link to="/tasks/scrum-board" className="font-semibold hover:text-blue-600">
-                            <p className="text-black text-xl font-bold">Scrum Board</p>
+                        <Link to="/tasks/scrum-board" className="font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            <p className="text-foreground text-xl font-bold">Scrum Board</p>
                         </Link>
 
-                        <Link to="/tasks/info" className="font-semibold hover:text-blue-600">
-                            <p className="text-black text-xl font-bold">Color Pattern</p>
+                        <Link to="/tasks/info" className="font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                            <p className="text-foreground text-xl font-bold">Color Pattern</p>
                         </Link>
 
                         <Link to="/tasks/stats" className="font-semibold hover:text-blue-600">
-                            <p className="text-black text-xl font-bold">Stats</p>
+                            <p className="text-foreground text-xl font-bold">Stats</p>
                         </Link>
                     </nav>
 
-                    {/* Right logout */}
-                    <div className="flex items-center">
+                    {/* Right: Dark mode toggle + logout */}
+                    <div className="flex items-center gap-2">
+                        {/* Dark mode toggle */}
+                        <div
+                            onClick={toggleDarkMode}
+                            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                            title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        >
+                            {darkMode ? (
+                                <Sun className="h-5 w-5 text-yellow-500" />
+                            ) : (
+                                <Moon className="h-5 w-5 text-gray-700" />
+                            )}
+                        </div>
+
+                        {/* Logout button */}
                         <div
                             onClick={hadleLogout}
-                            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 transition cursor-pointer"
+                            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                            title="Logout"
                         >
-                            <LogOut className="h-5 w-5 text-gray-700 hover:text-red-600" />
+                            <LogOut className="h-5 w-5 text-gray-700 dark:text-gray-300 hover:text-red-600" />
                         </div>
                     </div>
 

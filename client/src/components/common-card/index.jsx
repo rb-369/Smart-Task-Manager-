@@ -35,13 +35,13 @@ function CommonCard({
     >
       <CardHeader className="p-0">
         <div className="flex justify-between">
-          <CardTitle className={`text-2xl truncate ${extraTextStyles}`}>
+          <CardTitle className={`text-2xl truncate dark:text-white ${extraTextStyles}`}>
             {title}
           </CardTitle>
           {headerRightContent}
         </div>
 
-        <CardDescription className="mt-3 font-semibold text-gray-800">
+        <CardDescription className="mt-3 font-semibold text-gray-800 dark:text-gray-100">
           {description}
         </CardDescription>
       </CardHeader>

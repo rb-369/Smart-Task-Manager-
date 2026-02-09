@@ -14,8 +14,8 @@ function CommonDialog({ showDialog,
     return (
         <Dialog open={showDialog}
             onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-screen h-[450px] overflow-auto">
-                <DialogTitle>{title}</DialogTitle>
+            <DialogContent className="sm:max-w-screen h-[450px] overflow-auto dark:bg-slate-900 dark:border-slate-700">
+                <DialogTitle className="dark:text-white">{title}</DialogTitle>
                 <div>
                     <Commonform
                         formControls={formControls}

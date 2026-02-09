@@ -68,12 +68,14 @@ function Commonform({ formControls = [], handleSubmit, form, btnText }) {
                         ))
                         : null
                 }
-                <div className="flex justify-center mt-4 items-center">
-                    <CommonButton
-                        type={"submit"}
-                        buttonText={btnText}
+                <div className="flex justify-center mt-6 items-center">
+                    <button
+                        type="submit"
                         disabled={!form.formState.isValid && form.formState.isSubmitted}
-                    />
+                        className="h-11 px-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800"
+                    >
+                        {btnText}
+                    </button>
                 </div>
 
             </form>

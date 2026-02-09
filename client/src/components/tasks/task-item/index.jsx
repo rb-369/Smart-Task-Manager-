@@ -39,7 +39,7 @@ function TaskItem({ item, setShowDialog, handleDelete, setCurrentEditedId, taskF
                         {/* ✅ DONE BADGE (highest priority) */}
                         {isDone && (
                             <span className="px-3 py-1 rounded-full text-xs font-semibold
-                                    bg-white text-green-700
+                                    bg-white dark:bg-gray-800 text-green-700 dark:text-green-400
                                     border border-green-600
                                     shadow-[0_0_8px_rgba(34,197,94,0.6)]">
                                 ✅ Completed
@@ -48,35 +48,35 @@ function TaskItem({ item, setShowDialog, handleDelete, setCurrentEditedId, taskF
 
                         {/* ⏳ DUE BADGES (only when NOT done) */}
                         {!isDone && dueStatus?.type === "overdue" && (
-                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 border border-red-600 text-red-700 animate-pulseUrgent">
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 dark:bg-gray-800 border border-red-600 text-red-700 dark:text-red-400 animate-pulseUrgent">
                                 🔴 Overdue
                             </span>
                         )}
 
                         {!isDone && dueStatus?.type === "today" && (
-                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 border border-orange-500 text-orange-700 animate-pulseSlow">
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 dark:bg-gray-800 border border-orange-500 text-orange-700 dark:text-orange-400 animate-pulseSlow">
                                 ⏰ Due Today
                             </span>
                         )}
 
                         {!isDone && dueStatus?.type === "tomorrow" && (
-                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 border border-yellow-400 text-yellow-800">
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 dark:bg-gray-800 border border-yellow-400 text-yellow-800 dark:text-yellow-400">
                                 ⏰ Due Tomorrow
                             </span>
                         )}
 
                         {!isDone && dueStatus?.type === "future" && (
-                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 border border-blue-400 text-blue-700">
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 dark:bg-gray-800 border border-blue-400 text-blue-700 dark:text-blue-400">
                                 📅 Due in {dueStatus.days} days
                             </span>
                         )}
 
                         {!isDone && !dueStatus && (
-                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                                 ⛔ No deadline
                             </span>
                         )}
-                        
+
                     </div>
 
 

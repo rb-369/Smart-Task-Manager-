@@ -178,15 +178,17 @@ export const addNewTaskFormControls = [
 ]
 
 export const PRIORITY_COLOR_MAP = {
-    low: "border-black bg-green-500 hover:bg-green-400",
-    medium: "border-black bg-yellow-300 hover:bg-yellow-200",
-    high: "border-black bg-red-400 hover:bg-red-300",
+    // Light mode: Pastel background
+    // Dark mode: Distinct thick left border (ratio ~10-15%) with neutral dark background
+    low: "border-black bg-green-500 hover:bg-green-400 dark:bg-gray-800 dark:border-l-[24px] dark:border-green-600 dark:border-y-0 dark:border-r-0 dark:text-gray-100",
+    medium: "border-black bg-yellow-300 hover:bg-yellow-200 dark:bg-gray-800 dark:border-l-[24px] dark:border-yellow-600 dark:border-y-0 dark:border-r-0 dark:text-gray-100",
+    high: "border-black bg-red-400 hover:bg-red-300 dark:bg-gray-800 dark:border-l-[24px] dark:border-red-600 dark:border-y-0 dark:border-r-0 dark:text-gray-100",
 };
 
 export const priority_colors = {
-    low: "bg-green-500 hover:bg-green-400",
-    medium: "bg-yellow-300 hover:bg-yellow-200",
-    high: "bg-red-400 hover:bg-red-300"
+    low: "bg-green-500 hover:bg-green-400 dark:bg-green-600",
+    medium: "bg-yellow-300 hover:bg-yellow-200 dark:bg-amber-600",
+    high: "bg-red-400 hover:bg-red-300 dark:bg-red-600"
 }
 
 // export const hoverColorLogic = {

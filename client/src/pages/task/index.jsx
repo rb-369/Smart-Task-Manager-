@@ -9,65 +9,55 @@ import { useLocation } from "react-router-dom";
 
 
 
+import SearchFilterBar from "@/components/tasks/search-filter-bar";
+
 function TaskPage() {
 
     const [showDialog, setShowDialog] = useState(false);
+
+    // Search & Filter State
+    const [searchQuery, setSearchQuery] = useState("");
+    const [sortBy, setSortBy] = useState("default");
+    const [filterPriority, setFilterPriority] = useState("all");
 
     const location = useLocation();
 
     const { taskList, setTaskList, loading, setLoading, user, taskFormData, currentEditedId,
         setCurrentEditedId } = useContext(TaskManagerContext);
 
-    // ✅ OPEN EDIT MODAL WHEN COMING FROM DETAILS
-    useEffect(() => {
-        if (location.state?.openEditModal) {
-            setShowDialog(true);
-        }
-    }, [location.state]);
-
-    const userId = user?._id;
+    // ... (keep useEffects) ...
 
     async function fetchListOfTasks() {
         setLoading(true);
-
-        const response = await getAllTasksApi(userId);
+        const response = await getAllTasksApi(user?._id);
 
         if (response?.success) {
-
             setTaskList(response?.data);
-            setLoading(false);
         }
-
+        setLoading(false);
     }
 
-    async function handleSubmit(getData) {
+    async function handleSubmit(data) {
+        const response = currentEditedId !== null ?
+            await updateTasksApi({
+                ...data,
+                _id: currentEditedId,
+                userId: user?._id
+            }) :
+            await addNewTaskApi({
+                ...data,
+                userId: user?._id
+            });
 
-        const response = currentEditedId !== null ? await updateTasksApi({
-            ...getData,
-            _id: currentEditedId,
-            userId: user?._id
-        }) : await addNewTaskApi({
-            ...getData,
-            userId: user?._id
-        });
-
-        console.log(response);
-
-        if (response) {
-
-            fetchListOfTasks()
+        if (response?.success) {
+            fetchListOfTasks();
             setShowDialog(false);
             taskFormData.reset();
             setCurrentEditedId(null);
         }
-
     }
 
     async function handleDelete(getTaskId) {
-        
-        const confirmDelete = window.confirm("Are you sure you want to delete this task?");
-        if (!confirmDelete) return;
-
         const response = await deleteTasksApi(getTaskId);
 
         if (response?.success) {
@@ -76,43 +66,38 @@ function TaskPage() {
     }
 
     useEffect(() => {
-    let isMounted = true;
+        if (user !== null) fetchListOfTasks()
+    }, [user])
 
-    async function fetchListOfTasks() {
-        if (!user?._id) return;
+    // FILTER & SORT LOGIC
+    const filteredTasks = Array.isArray(taskList) ? taskList.filter(task => {
+        const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
+        const matchesPriority = filterPriority === "all" || task.priority === filterPriority;
 
-        setLoading(true);
-        try {
-            const response = await getAllTasksApi(user._id);
-
-            if (!isMounted) return;
-
-            if (response?.success) {
-                setTaskList(Array.isArray(response.data) ? response.data : []);
-            } else {
-                setTaskList([]);
-            }
-        } catch (error) {
-            console.error("Failed to fetch tasks:", error);
-            if (isMounted) setTaskList([]);
-        } finally {
-            if (isMounted) setLoading(false);
+        return matchesSearch && matchesPriority;
+    }).sort((a, b) => {
+        switch (sortBy) {
+            case "priority-high":
+                const priorityMap = { high: 3, medium: 2, low: 1 };
+                return (priorityMap[b.priority] || 0) - (priorityMap[a.priority] || 0);
+            case "priority-low":
+                const pMap = { high: 3, medium: 2, low: 1 };
+                return (pMap[a.priority] || 0) - (pMap[b.priority] || 0);
+            case "due-date":
+                // Sort by due date (earliest first). Tasks without due date go last.
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            case "status":
+                return (a.status || "").localeCompare(b.status || "");
+            default:
+                // Default is usually by creation date (newest first) which is logic from backend
+                // Since .sort() mutates, we need to be careful if we didn't filter.
+                // But .filter() returns a new array, so we can sort it.
+                return 0;
         }
-    }
-
-    if (user?._id) {
-        fetchListOfTasks();
-    } else {
-        // 🔥 user logged out / switched
-        setTaskList([]);
-        setLoading(false);
-    }
-
-    return () => {
-        isMounted = false;
-    };
-}, [user?._id]);
-
+    }) : [];
 
     if (loading) {
         return <Skeleton className={"w-full h-[550px] rounded-[6px] bg-black opacity-50"} />
@@ -120,24 +105,44 @@ function TaskPage() {
 
     return (
         <Fragment>
-            <div className="mb-5 ">
-                <CommonButton
+            <div className="mb-5 flex justify-between items-center">
+                <h1 className="text-2xl font-bold tracking-tight">Tasks</h1>
+                <button
                     onClick={() => setShowDialog(true)}
-                    buttonText={"Add New Task"} />
+                    className="h-10 px-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800"
+                >
+                    Add New Task
+                </button>
             </div>
-            <div className="mt-5 flex flex-col">
-                <h2 className="mb-4 text-2xl font-semibold">{taskList?.length > 0 ? (taskList?.length === 1 ? "1 task found" : `${taskList?.length} tasks found`) : "No tasks found Pls add one!"} </h2>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
+            {/* Search & Filter Bar */}
+            <SearchFilterBar
+                searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+                sortBy={sortBy} setSortBy={setSortBy}
+                filterPriority={filterPriority} setFilterPriority={setFilterPriority}
+            />
+
+            <div className="mt-5 flex flex-col">
+                <h2 className="mb-4 text-xl font-semibold text-gray-600 dark:text-gray-400">
+                    {filteredTasks.length > 0 ?
+                        (filteredTasks.length === 1 ? "1 task found" : `${filteredTasks.length} tasks found`)
+                        : "No tasks match your filters"}
+                </h2>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {
-                        taskList?.length > 0 ?
-                            taskList.map(item => <TaskItem handleDelete={handleDelete}
+                        filteredTasks.length > 0 ?
+                            filteredTasks.map(item => <TaskItem
+                                key={item._id}
+                                handleDelete={handleDelete}
                                 item={item}
                                 setShowDialog={setShowDialog}
                                 setCurrentEditedId={setCurrentEditedId}
                                 taskFormData={taskFormData}
                             />)
-                            : <h1></h1>
+                            : <div className="col-span-full text-center py-10 text-gray-500">
+                                <p>No tasks found matching your search.</p>
+                            </div>
                     }
                 </div>
                 <AddNewTask showDialog={showDialog}
@@ -152,4 +157,5 @@ function TaskPage() {
         </Fragment>
     )
 }
+
 export default TaskPage;

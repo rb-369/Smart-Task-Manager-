@@ -126,37 +126,45 @@ function TaskDetails() {
 
 
     return (
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-4xl mx-auto px-6 py-8 ">
 
             {/* HEADER */}
             <div className="flex items-center justify-between mb-6">
-                <CommonButton
-                    buttonText="← Back"
+                <button
                     onClick={() => navigate("/tasks/list")}
-                />
+                    className="h-10 px-4 bg-gradient-to-r from-gray-700 to-gray-800 dark:from-blue-600 dark:to-blue-700 text-white font-bold rounded-lg hover:from-gray-800 hover:to-gray-900 dark:hover:from-blue-700 dark:hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                    ← Back
+                </button>
 
                 <div className="flex gap-3">
-                    <CommonButton
-                        buttonText="Edit"
+                    <button
                         onClick={handleEdit}
-                    />
-                    <CommonButton
-                        buttonText="Delete"
+                        className="h-10 px-6 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-600 dark:to-green-700 text-white font-bold rounded-lg hover:from-green-600 hover:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                        Edit
+                    </button>
+                    <button
                         onClick={handleDelete}
-                    />
+                        className="h-10 px-6 bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 text-white font-bold rounded-lg hover:from-red-600 hover:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                        Delete
+                    </button>
                 </div>
             </div>
 
             {/* CARD */}
             <div
                 className={`rounded-3xl p-8 shadow-xl transition
-                ${isDone ? "bg-gray-100" : PRIORITY_COLOR_MAP[taskDetails.priority]}`}
+                ${isDone
+                        ? "bg-gray-100 dark:bg-gray-900 border border-transparent dark:border-gray-800"
+                        : PRIORITY_COLOR_MAP[taskDetails.priority]}`}
             >
                 {/* DONE BADGE */}
                 {isDone && (
                     <div className="mb-4">
                         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                            bg-green-100 text-green-700 text-sm font-semibold">
+                            bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm font-semibold border border-transparent dark:border-green-800">
                             ✅ Task Completed
                         </span>
                     </div>
@@ -165,7 +173,7 @@ function TaskDetails() {
                 {/* TITLE */}
                 <h1
                     className={`text-4xl font-bold mb-3
-                    ${isDone ? "line-through text-gray-500" : "text-gray-900"}`}
+                    ${isDone ? "line-through text-gray-500 dark:text-gray-500" : "text-gray-900 dark:text-white"}`}
                 >
                     {taskDetails.title}
                 </h1>
@@ -173,17 +181,17 @@ function TaskDetails() {
                 {/* DESCRIPTION */}
                 <p
                     className={`text-lg mb-6
-                    ${isDone ? "text-gray-500" : "text-gray-700"}`}
+                    ${isDone ? "text-gray-500 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}`}
                 >
                     {taskDetails.description || "No description provided."}
                 </p>
 
                 {/* STATUS + PRIORITY */}
                 <div className="flex gap-3 mb-6">
-                    <span className="px-4 py-2 rounded-full bg-black text-white text-sm font-semibold">
+                    <span className="px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-sm font-semibold">
                         Status: {taskDetails.status}
                     </span>
-                    <span className="px-4 py-2 rounded-full bg-white border text-sm font-semibold">
+                    <span className="px-4 py-2 rounded-full bg-white dark:bg-gray-700 border dark:border-gray-600 text-sm font-semibold text-gray-800 dark:text-gray-100 uppercase">
                         Priority: {taskDetails.priority}
                     </span>
                 </div>
@@ -193,8 +201,10 @@ function TaskDetails() {
                     <div className="mt-4 flex items-center justify-center">
                         <span
                             className={`text-sm font-semibold px-4 py-2 rounded-full
-                                    bg-white border shadow-sm mb-3
-                                ${isDone ? "border-gray-400 text-gray-600" : "border-green-600 text-green-700"}`}
+                                    border shadow-sm mb-3
+                                ${isDone
+                                    ? "bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-700 text-gray-600 dark:text-gray-400"
+                                    : "bg-white dark:bg-gray-800 border-green-600 dark:border-green-500 text-green-700 dark:text-green-400"}`}
                         >
                             {isDone ? `🏁 Due was on: ${formatDate(taskDetails.dueDate)}` : `🏁 Due on: ${formatDate(taskDetails.dueDate)}`}
                         </span>
@@ -202,7 +212,7 @@ function TaskDetails() {
                 ) : (
                     <div className="mt-4 flex items-center justify-center">
                         <span className="text-sm font-semibold px-4 py-2 rounded-full
-                             bg-white border border-gray-400 text-gray-600 shadow-sm mb-3">
+                             bg-white dark:bg-gray-800 border border-gray-400 dark:border-gray-600 text-gray-600 dark:text-gray-300 shadow-sm mb-3">
                             ⛔ No Deadline Given
                         </span>
                     </div>
@@ -213,7 +223,7 @@ function TaskDetails() {
                 {taskDetails.status === "done" && taskDetails.completedAt && (
                     <div className="mt-4 flex items-center justify-center">
                         <span className="text-sm font-semibold px-4 py-2 rounded-full
-            bg-white border border-green-600 text-green-700 shadow-sm mb-3">
+            bg-white dark:bg-gray-800 border border-green-600 dark:border-green-500 text-green-700 dark:text-green-400 shadow-sm mb-3">
                             🏁 Completed on: {formatDate(taskDetails.completedAt)}
                         </span>
                     </div>

@@ -1,6 +1,6 @@
 import { TaskManagerContext } from "@/context";
 import { getAllTasksApi } from "@/services";
-import { Fragment, useContext, useEffect } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import {
     BarChart,
     Bar,
@@ -11,8 +11,10 @@ import {
     PieChart,
     Pie,
     Cell,
+    Legend
 } from "recharts";
 import { getCompletionTiming } from "@/components/helper";
+import { Activity, CheckCircle, Clock, TrendingUp, AlertCircle, Calendar } from "lucide-react";
 
 function StatsPage() {
     const { user, taskList, setTaskList, loading, setLoading } =
@@ -33,7 +35,7 @@ function StatsPage() {
                 if (response?.success) {
                     setTaskList(Array.isArray(response.data) ? response.data : []);
                 } else {
-                    setTaskList([]); // 🔥 important
+                    setTaskList([]);
                 }
             } catch (error) {
                 console.error("Failed to fetch tasks:", error);
@@ -42,7 +44,7 @@ function StatsPage() {
                 }
             } finally {
                 if (isMounted) {
-                    setLoading(false); // 🔥 ALWAYS runs
+                    setLoading(false);
                 }
             }
         }
@@ -50,7 +52,6 @@ function StatsPage() {
         if (userId) {
             fetchListOfTasks();
         } else {
-            // 🔥 user logged out / switched
             setTaskList([]);
             setLoading(false);
         }
@@ -107,50 +108,60 @@ function StatsPage() {
         })
     );
 
-    // ===== CURRENT STREAK (STRICT, TODAY-ONLY START) =====
+    // ===== CURRENT STREAK (STRICT, TODAY/YESTERDAY START) =====
     let onTimeStreak = 0;
-
-    // normalize today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
-    // 🔴 IMPORTANT: if today is NOT completed → streak = 0
+    // Determines where the streak "starts" counting backwards from
+    let streakCursor = null;
+
     if (completedDaySet.has(today.getTime())) {
         onTimeStreak = 1;
+        streakCursor = yesterday;
+    } else if (completedDaySet.has(yesterday.getTime())) {
+        onTimeStreak = 1;
+        streakCursor = new Date(yesterday);
+        streakCursor.setDate(streakCursor.getDate() - 1);
+    }
 
-        let cursor = new Date(today);
-        cursor.setDate(cursor.getDate() - 1);
-
+    if (streakCursor) {
         while (true) {
-            const prevDay = new Date(cursor);
-            prevDay.setDate(prevDay.getDate() - 1);
-
             if (
-                completedDaySet.has(prevDay.getTime()) &&
-                cursor.getTime() - prevDay.getTime() === 86400000
+                completedDaySet.has(streakCursor.getTime())
             ) {
                 onTimeStreak++;
-                cursor = prevDay;
+                streakCursor.setDate(streakCursor.getDate() - 1);
             } else {
                 break;
             }
         }
-
     }
 
     // ===== LONGEST STREAK (historical) =====
     const completedDays = [...completedDaySet].sort((a, b) => a - b);
-
     let longestOnTimeStreak = 0;
-    let currentStreak = 0;
+    let currentCalcStreak = 0;
 
     for (let i = 0; i < completedDays.length; i++) {
         if (i === 0 || completedDays[i] - completedDays[i - 1] === 86400000) {
-            currentStreak++;
+            currentCalcStreak++;
         } else {
-            currentStreak = 1;
+            // Days are not consecutive, start a new streak
+            currentCalcStreak = 1;
         }
-        longestOnTimeStreak = Math.max(longestOnTimeStreak, currentStreak);
+        longestOnTimeStreak = Math.max(longestOnTimeStreak, currentCalcStreak);
+    }
+
+    /* ================= NEW STAT: AVG TASKS/DAY ================= */
+    // Estimate based on range from first completed task to today
+    let avgTasksPerDay = 0;
+    if (completedDays.length > 0) {
+        const firstDay = completedDays[0];
+        const dayDiff = Math.max(1, Math.ceil((today.getTime() - firstDay) / (1000 * 60 * 60 * 24)));
+        avgTasksPerDay = (completedTasksCount / dayDiff).toFixed(1);
     }
 
 
@@ -251,9 +262,12 @@ function StatsPage() {
     if (loading) {
         return (
             <div className="flex justify-center items-center h-[60vh]">
-                <h2 className="text-xl font-semibold text-gray-600">
-                    Loading statistics…
-                </h2>
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-white"></div>
+                    <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-300">
+                        Loading measurements...
+                    </h2>
+                </div>
             </div>
         );
     }
@@ -261,18 +275,18 @@ function StatsPage() {
     if (totalTasks === 0) {
         return (
             <div className="flex justify-center items-center h-[60vh] px-4">
-                <div className="max-w-md w-full bg-gray-50 border rounded-2xl shadow-sm p-8 text-center">
-                    <div className="text-4xl mb-4">📊</div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                <div className="max-w-md w-full bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 rounded-2xl shadow-lg p-8 text-center transition-all hover:scale-105 duration-300">
+                    <div className="text-6xl mb-6">📊</div>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
                         No statistics yet
                     </h2>
-                    <p className="text-gray-600 mb-6">
+                    <p className="text-gray-600 dark:text-gray-400 mb-8">
                         Add tasks to start tracking progress, completion trends, and productivity.
                     </p>
 
                     <button
                         onClick={() => window.location.href = "/tasks/list"}
-                        className="px-6 py-2 rounded-lg bg-black text-white font-semibold hover:bg-gray-900 transition"
+                        className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:-translate-y-1"
                     >
                         Go to Tasks
                     </button>
@@ -284,85 +298,222 @@ function StatsPage() {
 
     return (
         <Fragment>
-            <div className="max-w-7xl mx-auto px-6 py-8 space-y-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10 animate-in fade-in duration-700 slide-in-from-bottom-4">
 
-                <h1 className="text-4xl font-bold">
-                    Task Analytics Dashboard
-                </h1>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white">
+                            Analytics Dashboard
+                        </h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-2">
+                            Overview of your productivity and task completion stats
+                        </p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-blue-500" />
+                        <span className="font-semibold text-gray-700 dark:text-gray-200">
+                            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </span>
+                    </div>
+                </div>
 
                 {/* ===== TOP STATS ===== */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
-                    <StatCard title="Total Tasks" value={totalTasks} dark />
-                    <StatCard title="Todo" value={todoTasksCount} color="blue" />
-                    <StatCard title="In Progress" value={inProgressTaskCount} color="indigo" />
-                    <StatCard title="In Review" value={reviewTasksCount} color="purple" />
-                    <StatCard title="Blocked" value={blockedTasksCount} color="red" />
-                    <StatCard title="Completed" value={completedTasksCount} color="green" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                    <StatCard
+                        title="Total Tasks"
+                        value={totalTasks}
+                        icon={<Activity className="h-5 w-5" />}
+                        gradient="from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800"
+                        textColor="text-white"
+                    />
+                    <StatCard
+                        title="Todo"
+                        value={todoTasksCount}
+                        color="blue"
+                    />
+                    <StatCard
+                        title="In Progress"
+                        value={inProgressTaskCount}
+                        color="indigo"
+                        icon={<Clock className="h-4 w-4" />}
+                    />
+                    <StatCard
+                        title="In Review"
+                        value={reviewTasksCount}
+                        color="purple"
+                    />
+                    <StatCard
+                        title="Blocked"
+                        value={blockedTasksCount}
+                        color="red"
+                        icon={<AlertCircle className="h-4 w-4" />}
+                    />
+                    <StatCard
+                        title="Completed"
+                        value={completedTasksCount}
+                        color="green"
+                        icon={<CheckCircle className="h-4 w-4" />}
+                    />
                 </div>
 
                 {/* ===== QUALITY + STREAK ===== */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <StatCard title="Completed Early" value={completedEarlyCount} color="green" />
-                    <StatCard title="Completed On Time" value={completedOnTimeCount} color="blue" />
-                    <StatCard title="Completed Late" value={completedLateCount} color="red" />
-                    <div className="rounded-2xl p-6 bg-gradient-to-br from-green-100 to-green-50 border shadow flex items-center justify-center font-semibold text-green-800">
-                        🔥Streak: {onTimeStreak} {onTimeStreak === 1 ? "day" : (onTimeStreak === 0 ? "" : "days")}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <StatCard title="Completed Early" value={completedEarlyCount} color="green" suffix="Tasks" />
+                    <StatCard title="Completed On Time" value={completedOnTimeCount} color="blue" suffix="Tasks" />
+                    <StatCard title="Completed Late" value={completedLateCount} color="red" suffix="Tasks" />
+
+                    <div className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg transform transition hover:scale-105 duration-300">
+                        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-20 rounded-full blur-xl"></div>
+                        <div className="relative z-10 flex flex-col items-center justify-center text-center h-full">
+                            <h3 className="text-sm font-bold uppercase tracking-wider opacity-90 mb-1">Current Streak</h3>
+                            <div className="text-5xl font-black flex items-center gap-2">
+                                <span className="animate-pulse">🔥</span>
+                                {onTimeStreak}
+                            </div>
+                            <p className="text-sm font-medium opacity-90 mt-1">
+                                {onTimeStreak === 1 ? "Day" : "Days"} on fire!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg transform transition hover:scale-105 duration-300">
+                        <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-20 rounded-full blur-xl"></div>
+                        <div className="relative z-10 flex flex-col items-center justify-center text-center h-full">
+                            <div className="absolute top-4 right-4 opacity-50"><Activity className="h-5 w-5" /></div>
+                            <h3 className="text-sm font-bold uppercase tracking-wider opacity-90 mb-1">Avg. Tasks/Day</h3>
+                            <div className="text-4xl font-black flex items-center gap-2">
+                                {avgTasksPerDay}
+                            </div>
+                            <p className="text-sm font-medium opacity-90 mt-1">
+                                Lifetime Average
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 {/* ===== PROGRESS ===== */}
-                <div>
-                    <h2 className="text-xl font-semibold mb-2">Completion Progress</h2>
-                    <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                        <div
-                            className="bg-green-500 h-4 transition-all"
-                            style={{ width: `${completionPercent}%` }}
-                        />
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className="flex justify-between items-end mb-3">
+                        <h2 className="text-xl font-bold flex items-center gap-2 dark:text-white">
+                            <TrendingUp className="h-5 w-5 text-green-500" />
+                            Completion Progress
+                        </h2>
+                        <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            {completionPercent}%
+                        </span>
                     </div>
-                    <p className="mt-2 text-sm text-gray-600">
-                        {completionPercent}% tasks completed
-                    </p>
+                    <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-4 overflow-hidden shadow-inner">
+                        <div
+                            className="bg-gradient-to-r from-green-400 to-green-600 h-4 transition-all duration-1000 ease-out rounded-full relative"
+                            style={{ width: `${completionPercent}%` }}
+                        >
+                            <div className="absolute top-0 right-0 h-full w-full bg-white opacity-20 animate-pulse"></div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* ===== CHARTS GRID ===== */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                     {/* BAR */}
                     <ChartCard title="Task Status Distribution">
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={statusChartData}>
-                                <XAxis dataKey="name" />
-                                <YAxis allowDecimals={false} />
-                                <Tooltip />
-                                <Bar dataKey="value" fill="#111827" radius={[6, 6, 0, 0]} />
+                                <XAxis
+                                    dataKey="name"
+                                    tick={{ fill: 'var(--chart-text)', fontSize: 12 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    allowDecimals={false}
+                                    tick={{ fill: 'var(--chart-text)', fontSize: 12 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'var(--background)',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--foreground)'
+                                    }}
+                                    cursor={{ fill: 'var(--muted)' }}
+                                />
+                                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                                    {statusChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={statusColors[index % 20]} />
+                                    ))}
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </ChartCard>
 
-                    {/* PIE */}
-                    <ChartCard title="Task Breakdown (Circular)">
+                    {/* PIE - Status Breakdown */}
+                    <ChartCard title="Task Status Breakdown">
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
-                                <Pie data={statusChartData} dataKey="value" outerRadius={110} label>
+                                <Pie
+                                    data={statusChartData}
+                                    dataKey="value"
+                                    outerRadius={100}
+                                    innerRadius={60}
+                                    paddingAngle={2}
+                                >
                                     {statusChartData.map((_, i) => (
-                                        <Cell key={i} fill={statusColors[i]} />
+                                        <Cell key={i} fill={statusColors[i]} strokeWidth={0} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'var(--background)',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--foreground)'
+                                    }}
+                                />
+                                <Legend verticalAlign="bottom" height={36} formatter={(value) => <span style={{ color: 'var(--chart-text)' }}>{value}</span>} />
                             </PieChart>
                         </ResponsiveContainer>
                     </ChartCard>
 
-                    {/* DONUT */}
+                    {/* NEW: Priority Breakdown */}
+                    <ChartCard title="Tasks by Priority">
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: 'Low', value: safeTaskList.filter(t => t.priority === 'low').length },
+                                        { name: 'Medium', value: safeTaskList.filter(t => t.priority === 'medium').length },
+                                        { name: 'High', value: safeTaskList.filter(t => t.priority === 'high').length },
+                                    ]}
+                                    dataKey="value"
+                                    outerRadius={80}
+                                    label={({ name, percent }) => percent > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ''}
+                                >
+                                    <Cell fill="#22c55e" /> {/* Low - Green */}
+                                    <Cell fill="#eab308" /> {/* Medium - Yellow */}
+                                    <Cell fill="#ef4444" /> {/* High - Red */}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'var(--background)',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--foreground)'
+                                    }}
+                                />
+                                <Legend verticalAlign="bottom" height={36} formatter={(value) => <span style={{ color: 'var(--chart-text)' }}>{value}</span>} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </ChartCard>
+
+                    {/* Donut Timing */}
                     <ChartCard title="Completion Timing">
                         {completedTasksCount === 0 ? (
-                            <div className="h-[300px] flex flex-col items-center justify-center text-center text-gray-500">
-                                <div className="text-4xl mb-2">⏳</div>
-                                <p className="font-semibold">No tasks completed yet</p>
-                                <p className="text-sm mt-1">
-                                    Complete tasks to see timing analytics
-                                </p>
-                            </div>
+                            <EmptyChartState icon="⏳" message="Complete tasks to see timing analytics" />
                         ) : (
                             <ResponsiveContainer width="100%" height={300}>
                                 <PieChart>
@@ -370,16 +521,24 @@ function StatsPage() {
                                         data={completionTimingData}
                                         dataKey="value"
                                         nameKey="name"
-                                        innerRadius={70}
-                                        outerRadius={110}
+                                        innerRadius={60}
+                                        outerRadius={100}
                                         paddingAngle={4}
-                                        label
+                                        label={({ percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}
                                     >
                                         {completionTimingData.map((_, i) => (
-                                            <Cell key={i} fill={timingColors[i]} />
+                                            <Cell key={i} fill={timingColors[i]} strokeWidth={0} />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'var(--background)',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--border)',
+                                            color: 'var(--foreground)'
+                                        }}
+                                    />
+                                    <Legend verticalAlign="bottom" formatter={(value) => <span style={{ color: 'var(--chart-text)' }}>{value}</span>} />
                                 </PieChart>
                             </ResponsiveContainer>
                         )}
@@ -387,31 +546,66 @@ function StatsPage() {
 
 
                     {/* Weekly Analytics */}
-                    <ChartCard title="📅 Tasks Completed (Last 7 Days)">
+                    <ChartCard title="Tasks Completed (Last 7 Days)">
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={weeklyCompletionData}>
-                                <XAxis dataKey="name" />
-                                <YAxis allowDecimals={false} />
-                                <Tooltip />
-                                <Bar dataKey="value" fill="#22C55E" radius={[6, 6, 0, 0]} />
+                                <XAxis
+                                    dataKey="name"
+                                    tick={{ fill: 'var(--chart-text)', fontSize: 12 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    allowDecimals={false}
+                                    tick={{ fill: 'var(--chart-text)', fontSize: 12 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: 'var(--muted)' }}
+                                    contentStyle={{
+                                        backgroundColor: 'var(--background)',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--foreground)'
+                                    }}
+                                />
+                                <Bar dataKey="value" fill="#22C55E" radius={[6, 6, 0, 0]} barSize={40}>
+                                    {/* Gradient fill */}
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </ChartCard>
 
                     {/* Monthly Analytics */}
-
-                    <ChartCard title="📆 Monthly Completion Trend">
+                    <ChartCard title="Monthly Completion Trend">
                         {monthlyCompletionData.length === 0 ? (
-                            <div className="h-[300px] flex items-center justify-center text-gray-500">
-                                No tasks completed this month
-                            </div>
+                            <EmptyChartState icon="📆" message="No tasks completed this month" />
                         ) : (
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={monthlyCompletionData}>
-                                    <XAxis dataKey="name" />
-                                    <YAxis allowDecimals={false} />
-                                    <Tooltip />
-                                    <Bar dataKey="value" fill="#3B82F6" radius={[6, 6, 0, 0]} />
+                                    <XAxis
+                                        dataKey="name"
+                                        tick={{ fill: 'var(--chart-text)', fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <YAxis
+                                        allowDecimals={false}
+                                        tick={{ fill: 'var(--chart-text)', fontSize: 12 }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: 'var(--muted)' }}
+                                        contentStyle={{
+                                            backgroundColor: 'var(--background)',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--border)',
+                                            color: 'var(--foreground)'
+                                        }}
+                                    />
+                                    <Bar dataKey="value" fill="#3B82F6" radius={[6, 6, 0, 0]} barSize={40} />
                                 </BarChart>
                             </ResponsiveContainer>
                         )}
@@ -419,36 +613,51 @@ function StatsPage() {
 
 
                     {/* SUMMARY */}
-                    <ChartCard title="📈 Productivity Summary">
-                        <div className="space-y-4 text-sm">
-                            <SummaryRow label="Tasks Completed" value={completedTasksCount} color="green" />
-                            <SummaryRow
-                                label="On-time Completion"
-                                value={`${onTimeCompletionPercent}%`}
-                                color="blue"
-                            />
-                            <SummaryRow
-                                label="Before-Time Completion"
-                                value={`${beforeTimeCompletionPercent}%`}
-                                color="blue"
-                            />
-                            <SummaryRow
-                                label="Late Completion"
-                                value={`${lateCompletionPercent}%`}
-                                color="blue"
-                            />
-                            <SummaryRow label="Tasks Pending" value={totalTasks - completedTasksCount} color="green" />
-                            <SummaryRow label="Late Tasks" value={completedLateCount} color="red" />
-                            <div className="pt-4 border-t flex justify-between font-semibold">
-                                <span>🔥 Current Streak</span>
-                                <span className="text-green-700">{onTimeStreak} {onTimeStreak === 1 ? "day" : (onTimeStreak === 0 ? "" : "days")}</span>
+                    <div className="lg:col-span-2">
+                        <ChartCard title="Productivity Summary">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <SummaryRow label="Tasks Completed" value={completedTasksCount} color="green" />
+                                    <SummaryRow
+                                        label="On-time Completion"
+                                        value={`${onTimeCompletionPercent}%`}
+                                        color="blue"
+                                        subtext={`${completedOnTimeCount} tasks`}
+                                    />
+                                    <SummaryRow
+                                        label="Before-Time Completion"
+                                        value={`${beforeTimeCompletionPercent}%`}
+                                        color="blue"
+                                        subtext={`${completedEarlyCount} tasks`}
+                                    />
+                                    <SummaryRow
+                                        label="Late Completion"
+                                        value={`${lateCompletionPercent}%`}
+                                        color="red"
+                                        subtext={`${completedLateCount} tasks`}
+                                    />
+                                </div>
+                                <div className="space-y-4">
+                                    <SummaryRow label="Total Pending" value={totalTasks - completedTasksCount} color="orange" />
+                                    <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl mt-4 border border-gray-100 dark:border-gray-700">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-gray-600 dark:text-gray-300 font-medium">Longest Streak</span>
+                                            <span className="text-xl font-bold text-gray-800 dark:text-white">
+                                                {longestOnTimeStreak} {longestOnTimeStreak === 1 ? "day" : "days"}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-gray-600 h-2 rounded-full overflow-hidden">
+                                            <div
+                                                className="bg-yellow-500 h-full rounded-full"
+                                                style={{ width: `${Math.min((longestOnTimeStreak / 30) * 100, 100)}%` }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Target: 30 days to become a habit master!</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="pt-4 border-t flex justify-between font-semibold">
-                                <span>🔥🔥Longest Streak</span>
-                                <span className="text-green-700">{longestOnTimeStreak} {longestOnTimeStreak == 1 ? "day" : "days"}</span>
-                            </div>
-                        </div>
-                    </ChartCard>
+                        </ChartCard>
+                    </div>
 
                 </div>
             </div>
@@ -456,53 +665,72 @@ function StatsPage() {
     );
 }
 
-/* ===== SMALL COMPONENTS ===== */
+/* ===== COMPONENTS ===== */
 
 function ChartCard({ title, children }) {
     return (
-        <div className="bg-gray-50 p-6 rounded-2xl border shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">{title}</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <h3 className="text-lg font-bold mb-6 text-gray-800 dark:text-white flex items-center gap-2">
+                {title}
+            </h3>
             {children}
         </div>
     );
 }
 
-function SummaryRow({ label, value, color }) {
-    const map = {
-        green: "text-green-700",
-        blue: "text-blue-700",
-        red: "text-red-600",
-    };
+function EmptyChartState({ icon, message }) {
     return (
-        <div className="flex justify-between">
-            <span className="text-gray-600">{label}</span>
-            <span className={`font-bold ${map[color]}`}>{value}</span>
+        <div className="h-[300px] flex flex-col items-center justify-center text-center text-gray-500 dark:text-gray-400 opacity-70">
+            <div className="text-4xl mb-3 grayscale">{icon}</div>
+            <p className="font-semibold">{message}</p>
         </div>
     );
 }
 
-function StatCard({ title, value, color, dark }) {
-    if (dark) {
+function SummaryRow({ label, value, color, subtext }) {
+    const map = {
+        green: "text-green-600 dark:text-green-400",
+        blue: "text-blue-600 dark:text-blue-400",
+        red: "text-red-600 dark:text-red-400",
+        orange: "text-orange-600 dark:text-orange-400",
+    };
+    return (
+        <div className="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors">
+            <span className="text-gray-600 dark:text-gray-300 font-medium">{label}</span>
+            <div className="text-right">
+                <div className={`font-bold text-lg ${map[color]}`}>{value}</div>
+                {subtext && <div className="text-xs text-gray-400 font-medium">{subtext}</div>}
+            </div>
+        </div>
+    );
+}
+
+function StatCard({ title, value, color, gradient, textColor, icon, suffix }) {
+    if (gradient) {
         return (
-            <div className="rounded-2xl p-6 bg-gray-900 text-white shadow">
-                <h3 className="text-sm uppercase text-gray-300">{title}</h3>
-                <p className="text-4xl font-bold mt-2">{value}</p>
+            <div className={`rounded-2xl p-6 ${textColor || 'text-white'} shadow-lg bg-gradient-to-br ${gradient} transform transition hover:scale-105 duration-300 relative overflow-hidden group`}>
+                <div className="absolute top-0 right-0 p-4 opacity-50 transform group-hover:scale-110 transition-transform">{icon}</div>
+                <h3 className="text-sm font-bold uppercase tracking-wider opacity-80 mb-1">{title}</h3>
+                <p className="text-3xl font-black">{value}</p>
+                {suffix && <p className="text-xs opacity-70 mt-1">{suffix}</p>}
             </div>
         );
     }
 
     const colorMap = {
-        blue: "bg-blue-100 text-blue-800 border-blue-300",
-        indigo: "bg-indigo-100 text-indigo-800 border-indigo-300",
-        purple: "bg-purple-100 text-purple-800 border-purple-300",
-        red: "bg-red-100 text-red-800 border-red-300",
-        green: "bg-green-100 text-green-800 border-green-300",
+        blue: "bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900",
+        indigo: "bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-900",
+        purple: "bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-900",
+        red: "bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-100 dark:border-red-900",
+        green: "bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-100 dark:border-green-900",
     };
 
     return (
-        <div className={`rounded-2xl p-6 border shadow ${colorMap[color]}`}>
-            <h3 className="text-sm uppercase">{title}</h3>
-            <p className="text-4xl font-bold mt-2">{value}</p>
+        <div className={`rounded-2xl p-6 border ${colorMap[color]} shadow-sm hover:shadow-md transition-all duration-300 flex flex-col relative`}>
+            <div className="absolute top-4 right-4 opacity-50">{icon}</div>
+            <h3 className="text-xs font-bold uppercase opacity-80 mb-2">{title}</h3>
+            <p className="text-3xl font-bold">{value}</p>
+            {suffix && <p className="text-xs opacity-60 mt-1 font-medium">{suffix}</p>}
         </div>
     );
 }

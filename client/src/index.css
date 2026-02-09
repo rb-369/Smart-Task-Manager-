@@ -23,14 +23,57 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
 
 body {
   margin: 0;
-  
   min-height: 100vh;
+  background-color: #ffffff;
+}
+
+body.dark {
+  background-color: #030712;
+}
+
+html {
+  background-color: #ffffff;
+}
+
+html.dark {
+  background-color: #030712;
+}
+
+/* Scrollbar styling for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+::-webkit-scrollbar-track.dark {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+::-webkit-scrollbar-thumb.dark {
+  background: #4b5563;
+}
+
+::-webkit-scrollbar-thumb.dark:hover {
+  background: #6b7280;
 }
 
 h1 {
@@ -63,9 +106,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
@@ -100,7 +145,13 @@ button:focus-visible {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* Custom Chart Colors */
+    --chart-text: #6b7280;
+    /* gray-500 */
+    --chart-grid: #e5e7eb;
   }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -126,6 +177,12 @@ button:focus-visible {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --chart-5: 340 75% 55%;
+
+    /* Custom Chart Colors */
+    --chart-text: #e5e7eb;
+    /* grayish white */
+    --chart-grid: #374151;
   }
 }
 
@@ -135,7 +192,12 @@ button:focus-visible {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-white text-gray-900 transition-colors duration-300;
+  }
+
+  .dark body {
+    @apply bg-gray-950 text-white;
   }
 }

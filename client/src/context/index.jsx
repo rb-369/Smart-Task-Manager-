@@ -9,116 +9,136 @@ export const TaskManagerContext = createContext(null);
 
 function TaskManagerProvider({ children }) {
 
-    const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
 
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const [taskList, setTaskList] = useState([]);
+  const [taskList, setTaskList] = useState([]);
 
-    const [currentEditedId, setCurrentEditedId] = useState(null);
+  // Dark mode state
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
 
-    const [taskDetails, setTaskDetails] = useState(null);
+  // Apply dark mode class to body
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
-    const taskFormData = useForm({
-        defaultValues: {
-            title: "",
-            description: "",
-            status: "todo",
-            priority: "medium",
-            dueDate: null
+  const toggleDarkMode = () => setDarkMode(prev => !prev);
+
+  const [currentEditedId, setCurrentEditedId] = useState(null);
+
+  const [taskDetails, setTaskDetails] = useState(null);
+
+  const taskFormData = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      status: "todo",
+      priority: "medium",
+      dueDate: null
+    }
+  })
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // useEffect(() => {
+  //     const verifyUserCookie = async () => {
+  //         const data = await callUserAuthApi();
+
+  //         if (data?.success && data?.curUserInfo) {
+  //             setUser(data.curUserInfo);
+
+  //             // ✅ Only redirect when on auth or root
+  //             if (location.pathname === "/auth" || location.pathname === "/") {
+  //                 navigate("/tasks/list");
+  //             }
+  //         } else {
+  //             navigate("/auth");
+  //         }
+  //     };
+
+  //     verifyUserCookie();
+  // }, [navigate, location.pathname]);
+
+  // useEffect(() => {
+  //     const verifyUserCookie = async () => {
+  //         try {
+  //             const data = await callUserAuthApi();
+
+  //             if (data?.success && data?.curUserInfo) {
+  //                 setUser(data.curUserInfo);
+
+  //                 if (location.pathname === "/auth" || location.pathname === "/") {
+  //                     navigate("/tasks/list");
+  //                 }
+  //             } else {
+  //                 // 🔴 only force auth page if user tries protected route
+  //                 if (location.pathname.startsWith("/tasks")) {
+  //                     navigate("/auth");
+  //                 }
+  //             }
+
+  //         } catch (err) {
+  //             if (location.pathname.startsWith("/tasks")) {
+  //                 navigate("/auth");
+  //             }
+  //         }
+  //     };
+
+  //     verifyUserCookie();
+  // }, [location.pathname]);
+
+  useEffect(() => {
+    const verifyUserCookie = async () => {
+      try {
+        const data = await callUserAuthApi();
+
+        if (data?.success && data?.curUserInfo) {
+          setUser(data.curUserInfo);
+
+          if (location.pathname === "/auth" || location.pathname === "/") {
+            navigate("/tasks/list", { replace: true });
+          }
+
+        } else {
+          // ✅ only force to /auth if user is on protected route
+          if (location.pathname.startsWith("/tasks")) {
+            navigate("/auth", { replace: true });
+          }
         }
-    })
-    const navigate = useNavigate();
-    const location = useLocation();
-
-// useEffect(() => {
-//     const verifyUserCookie = async () => {
-//         const data = await callUserAuthApi();
-
-//         if (data?.success && data?.curUserInfo) {
-//             setUser(data.curUserInfo);
-
-//             // ✅ Only redirect when on auth or root
-//             if (location.pathname === "/auth" || location.pathname === "/") {
-//                 navigate("/tasks/list");
-//             }
-//         } else {
-//             navigate("/auth");
-//         }
-//     };
-
-//     verifyUserCookie();
-// }, [navigate, location.pathname]);
-
-// useEffect(() => {
-//     const verifyUserCookie = async () => {
-//         try {
-//             const data = await callUserAuthApi();
-
-//             if (data?.success && data?.curUserInfo) {
-//                 setUser(data.curUserInfo);
-
-//                 if (location.pathname === "/auth" || location.pathname === "/") {
-//                     navigate("/tasks/list");
-//                 }
-//             } else {
-//                 // 🔴 only force auth page if user tries protected route
-//                 if (location.pathname.startsWith("/tasks")) {
-//                     navigate("/auth");
-//                 }
-//             }
-
-//         } catch (err) {
-//             if (location.pathname.startsWith("/tasks")) {
-//                 navigate("/auth");
-//             }
-//         }
-//     };
-
-//     verifyUserCookie();
-// }, [location.pathname]);
-
-useEffect(() => {
-  const verifyUserCookie = async () => {
-    try {
-      const data = await callUserAuthApi();
-
-      if (data?.success && data?.curUserInfo) {
-        setUser(data.curUserInfo);
-
-        if (location.pathname === "/auth" || location.pathname === "/") {
-          navigate("/tasks/list", { replace: true });
-        }
-
-      } else {
-        // ✅ only force to /auth if user is on protected route
+      } catch (err) {
         if (location.pathname.startsWith("/tasks")) {
           navigate("/auth", { replace: true });
         }
       }
-    } catch (err) {
-      if (location.pathname.startsWith("/tasks")) {
-        navigate("/auth", { replace: true });
-      }
-    }
-  };
+    };
 
-  verifyUserCookie();
-}, [location.pathname]);
+    verifyUserCookie();
+  }, [location.pathname]);
 
-    return <TaskManagerContext.Provider value={{
-        user,
-        setUser,
-        taskFormData,
-        taskList,
-        setTaskList,
-        loading,
-        setLoading,
-        currentEditedId,
-        setCurrentEditedId,
-        setTaskDetails,
-        taskDetails
-    }}>{children}</TaskManagerContext.Provider>
+  return <TaskManagerContext.Provider value={{
+    user,
+    setUser,
+    taskFormData,
+    taskList,
+    setTaskList,
+    loading,
+    setLoading,
+    currentEditedId,
+    setCurrentEditedId,
+    setTaskDetails,
+    taskDetails,
+    darkMode,
+    toggleDarkMode
+  }}>{children}</TaskManagerContext.Provider>
 }
 
 export default TaskManagerProvider;
