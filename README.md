@@ -104,6 +104,7 @@ Perfect for learning full-stack development and deploying production-grade appli
 | MongoDB | NoSQL database |
 | Mongoose | ODM for MongoDB |
 | JWT | Token authentication |
+| Oauth | Authentication |
 | SendGrid | Email service |
 | node-cron | Task scheduling |
 | dotenv | Environment management |
@@ -116,6 +117,7 @@ Perfect for learning full-stack development and deploying production-grade appli
 | **Railway** | Backend hosting |
 | **MongoDB Atlas** | Cloud database |
 | **SendGrid** | Email API |
+| **Google Auth** | Authentication |
 
 ---
 
