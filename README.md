@@ -18,7 +18,9 @@ Perfect for learning full-stack development and deploying production-grade appli
 ## ✨ Key Features
 
 ### 🔐 **Authentication & Security**
-- ✅ Uses Google's oauth 
+- ✅ **Google OAuth 2.0** - Passwordless authentication with Google
+- ✅ **Auto-username generation** - Username automatically derived from email (e.g., rb@gmail.com → rb)
+- ✅ **Instant registration** - New users auto-registered on first OAuth login
 - ✅ User registration with validation
 - ✅ Secure login with JWT tokens
 - ✅ Cookie-based session management
@@ -222,7 +224,42 @@ npm run dev
 
 ---
 
-## 📧 Email Notifications Setup
+## � Google OAuth Setup
+
+### **Getting Google OAuth Credentials**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project
+3. Enable Google OAuth 2.0 API
+4. Create OAuth 2.0 credentials:
+   - Application type: Web application
+   - Authorized origins: `http://localhost:5173`, `https://your-vercel-domain.com`
+   - Authorized redirects: `http://localhost:5173`, `https://your-vercel-domain.com`
+5. Copy **Client ID** and **Client Secret**
+
+### **Local Setup (.env files)**
+**server/.env:**
+```env
+GOOGLE_CLIENT_ID=your_client_id_here
+GOOGLE_CLIENT_SECRET=your_client_secret_here
+```
+
+**client/.env:**
+```env
+VITE_GOOGLE_CLIENT_ID=your_client_id_here
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+### **OAuth Features**
+- ✅ One-click Google sign-in
+- ✅ Automatic user account creation
+- ✅ Username auto-generated from email
+- ✅ Secure token verification with Google API
+- ✅ httpOnly cookie storage
+- ✅ COOP headers for popup security
+
+---
+
+## �📧 Email Notifications Setup
 
 ### **SendGrid Configuration**
 1. Create account at [SendGrid](https://sendgrid.com)
@@ -250,17 +287,31 @@ POST /api/notification/trigger-reminders
 
 ## 🔐 Authentication & Security
 
-### **Authentication Flow**
+### **Authentication Methods**
+1. **Email/Password** - Traditional registration and login
+2. **Google OAuth 2.0** - One-click sign-in with Google
+
+### **OAuth Authentication Flow**
 ```
-User Login
-    ↓
-JWT Token Generated
-    ↓
-Token Stored in Secure Cookies
-    ↓
-Backend Validates Each Request
-    ↓
-Access to Protected Routes & APIs
+1. User clicks "Sign in with Google"
+   ↓
+2. Google popup opens
+   ↓
+3. User signs in with Google account
+   ↓
+4. Google returns ID token
+   ↓
+5. Frontend sends token to backend
+   ↓
+6. Backend verifies with Google API
+   ↓
+7. Check if user exists:
+   - YES: Login (return existing user)
+   - NO: Auto-register with auto-generated username
+   ↓
+8. Generate JWT token & set secure cookie
+   ↓
+9. Redirect to /tasks/list
 ```
 
 ### **Protected Resources**
@@ -269,14 +320,23 @@ Access to Protected Routes & APIs
 - Analytics (requires login)
 - Profile settings (requires login)
 
+### **Security Features**
+- ✅ Server-side token verification (never trust client)
+- ✅ httpOnly cookies (XSS protection)
+- ✅ CORS validation
+- ✅ COOP headers for OAuth popup security
+- ✅ Secure password hashing with bcryptjs
+- ✅ JWT expiration (3 days)
+
 ---
 
 ## 📊 API Endpoints
 
 ### **Authentication** 🔐
 ```
-POST   /api/user/register          # User registration
-POST   /api/user/login             # User login
+POST   /api/user/register          # User registration (email/password)
+POST   /api/user/login             # User login (email/password)
+POST   /api/user/google-oauth      # Google OAuth sign-in/register
 POST   /api/user/auth              # Check authentication
 POST   /api/user/logout            # User logout
 ```
@@ -343,26 +403,83 @@ POST   /api/notification/trigger-reminders # Trigger daily reminders
 
 ## 🚢 Deployment
 
-### **Frontend (Vercel)**
-```bash
-cd client
-npm run build
-# Deploy via Vercel CLI or GitHub
-```
+### **Deploy Backend to Railway**
 
-### **Backend (Railway)**
-```bash
-# Connect Railway to GitHub
-# Set env variables in Railway dashboard
-# Auto-deploy on push
-```
+1. **Connect to Railway:**
+   - Go to [Railway](https://railway.app/)
+   - Create new project from GitHub
+   - Select your Smart-Task-Manager repository
+   - Create new service → Node.js
 
-### **Required Environment Variables**
-- `MONGO_URL` - MongoDB Atlas
-- `SENDGRID_API_KEY` - SendGrid
-- `SENDER_EMAIL` - Notification sender
-- `TZ` - Timezone (e.g., Asia/Kolkata)
-- `NODE_ENV` - production/development
+2. **Add Environment Variables in Railway Dashboard:**
+   - Click your project → Variables
+   - Add all required variables:
+
+   ```env
+   PORT=5000
+   MONGO_URL=your_mongodb_atlas_connection_string
+   SENDGRID_API_KEY=your_sendgrid_api_key
+   SENDER_EMAIL=your_sender_email@example.com
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   JWT_SECRET=your_super_secret_jwt_key_here
+   TZ=Asia/Kolkata
+   NODE_ENV=production
+   ```
+
+3. **Deploy:**
+   - Railway auto-deploys on push to main branch
+   - Check deployment logs if errors occur
+
+### **Deploy Frontend to Vercel**
+
+1. **Connect to Vercel:**
+   - Go to [Vercel](https://vercel.com/)
+   - Import project from GitHub
+   - Select `client` folder as root directory
+
+2. **Add Environment Variables in Vercel Dashboard:**
+   - Go to Settings → Environment Variables
+   - Add these variables:
+
+   ```env
+   VITE_GOOGLE_CLIENT_ID=your_google_client_id
+   VITE_API_BASE_URL=https://smart-task-manager-production.up.railway.app
+   ```
+
+3. **Deploy:**
+   - Vercel auto-deploys on push to main branch
+   - View deployment at your Vercel domain
+
+### **Environment Variables Summary**
+
+| Variable | Backend | Frontend | Purpose |
+|----------|---------|----------|---------|
+| `MONGO_URL` | ✅ | ❌ | MongoDB connection (REQUIRED) |
+| `SENDGRID_API_KEY` | ✅ | ❌ | Email service (REQUIRED) |
+| `SENDER_EMAIL` | ✅ | ❌ | Email sender (REQUIRED) |
+| `GOOGLE_CLIENT_ID` | ✅ | ✅ | OAuth sign-in (REQUIRED) |
+| `GOOGLE_CLIENT_SECRET` | ✅ | ❌ | OAuth secret - NEVER expose! |
+| `JWT_SECRET` | ✅ | ❌ | Token signing (REQUIRED) |
+| `VITE_API_BASE_URL` | ❌ | ✅ | Backend API URL (default: localhost) |
+| `PORT` | ✅ | ❌ | Server port (default: 5000) |
+| `NODE_ENV` | ✅ | ❌ | Environment mode |
+| `TZ` | ✅ | ❌ | Timezone for emails |
+
+### **⚠️ Important: Without Environment Variables**
+**YES, the app will NOT work without proper environment variables!** Here's what will break:
+
+- ❌ **No OAuth login** → Google sign-in will fail
+- ❌ **No Email notifications** → Reminder emails won't send
+- ❌ **No Database connection** → Tasks won't be saved
+- ❌ **No API calls** → Frontend can't reach backend
+
+**Verifying Deployment:**
+1. Check Vercel & Railway dashboards for errors
+2. Test OAuth button on frontend
+3. Test creating a task
+4. Check email notifications work
+5. Monitor console for any errors
 
 ---
 
@@ -371,18 +488,21 @@ npm run build
 This project covers essential full-stack concepts:
 
 - ✅ **MERN Stack** - Complete implementation
-- ✅ **Authentication** - JWT + Cookie-based
+- ✅ **Authentication** - JWT + Cookie-based + OAuth 2.0
+- ✅ **Google OAuth 2.0** - Passwordless authentication
+- ✅ **Auto-registration** - User account creation from OAuth
 - ✅ **State Management** - React Context API
 - ✅ **REST APIs** - Design & implementation
 - ✅ **Database Design** - MongoDB schemas
 - ✅ **Email Service** - SendGrid integration
 - ✅ **Task Scheduling** - Cron jobs
 - ✅ **Cloud Deployment** - Vercel & Railway
+- ✅ **Environment Variables** - Secure credential management
 - ✅ **UI/UX Design** - Tailwind CSS
 - ✅ **Real-time Updates** - Instant status changes
 - ✅ **Data Visualization** - Charts with Recharts
 - ✅ **Error Handling** - Comprehensive management
-- ✅ **Security** - JWT, CORS, validation
+- ✅ **Security** - OAuth, JWT, CORS, validation
 - ✅ **Performance** - Optimization techniques
 
 ---
