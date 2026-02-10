@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "https://smart-task-manager-production.up.railway.app";
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 export const callRegisterUserApi = async (formData) => {
   const response = await axios.post(
@@ -15,6 +15,15 @@ export const callLoginUserApi = async (formData) => {
   const response = await axios.post(
     `${API}/api/user/login`,
     formData,
+    { withCredentials: true }
+  );
+  return response?.data;
+};
+
+export const callGoogleOAuthApi = async (credentialToken) => {
+  const response = await axios.post(
+    `${API}/api/user/google-oauth`,
+    { credential: credentialToken },
     { withCredentials: true }
   );
   return response?.data;

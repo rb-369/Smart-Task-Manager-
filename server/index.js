@@ -12,11 +12,19 @@ const taskRoutes = require("./routes/task-routes")
 
 const app = express();
 
+// Add headers middleware for COOP and cross-origin policies
+app.use((req, res, next) => {
+    res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+    next();
+});
+
 app.use(
     cors({
         origin: ["https://smart-task-manager-sl4a.vercel.app", "http://localhost:5173"],
         methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true
+        credentials: true,
+        optionsSuccessStatus: 200
     })
 )
 
@@ -39,7 +47,7 @@ app.use("/api", (req, res) => {
 const port = process.env.PORT;
 
 app.listen(port, () => {
-    console.log(`App is Running on port 5000`);
+    console.log(`App is Running on port ${port}`);
     
     // Start the task notification scheduler
     startNotificationScheduler();

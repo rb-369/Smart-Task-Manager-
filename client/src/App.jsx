@@ -11,32 +11,42 @@ import TaskDetails from './pages/task-details'
 import StatsPage from './pages/stats'
 
 import TaskReminders from './components/task-reminders';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 function App() {
 
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
-      <TaskReminders />
-      <Routes>
+    <GoogleOAuthProvider 
+      clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+      onScriptProps={{
+        async: true,
+        defer: true,
+        nonce: "YOUR-NONCE-HERE"
+      }}
+    >
+      <div className="min-h-screen transition-colors duration-300 bg-white dark:bg-gray-950 text-gray-900 dark:text-white">
+        <TaskReminders />
+        <Routes>
 
-        <Route path="/" element={<Navigate to="/auth" replace />} />
+          <Route path="/" element={<Navigate to="/auth" replace />} />
 
-        <Route path="/auth" element={<AuthPage />} />
-        {/* <Route path='/tasks' element={<TaskPage/>}/> */}
+          <Route path="/auth" element={<AuthPage />} />
+          {/* <Route path='/tasks' element={<TaskPage/>}/> */}
 
-        <Route path='/tasks' element={<CommonLayout />}>
+          <Route path='/tasks' element={<CommonLayout />}>
 
-          <Route path='list' element={<TaskPage />} />
-          <Route path='scrum-board' element={<ScrumBoardPage />} />
-          <Route path='details/:id' element={<TaskDetails />} />
-          <Route path='stats' element={<StatsPage />} />
-          <Route path="info" element={<Info />} />
-        </Route>
+            <Route path='list' element={<TaskPage />} />
+            <Route path='scrum-board' element={<ScrumBoardPage />} />
+            <Route path='details/:id' element={<TaskDetails />} />
+            <Route path='stats' element={<StatsPage />} />
+            <Route path="info" element={<Info />} />
+          </Route>
 
-      </Routes>
+        </Routes>
 
-    </div>
+      </div>
+    </GoogleOAuthProvider>
 
   )
 }

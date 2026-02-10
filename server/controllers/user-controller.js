@@ -3,7 +3,13 @@ const Joi = require("joi");
 const User = require("../models/user");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
 
+// Google OAuth2 Client
+const googleClient = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+);
 
 // to register a user
 
@@ -22,9 +28,14 @@ const loginSchema = Joi.object({
 const generateToken = (getId) => {
     return jwt.sign({
         getId
-    }, "DEFAULT_SECRET_KEY", {
+    }, process.env.JWT_SECRET || "DEFAULT_SECRET_KEY", {
         expiresIn: 3 * 24 * 60 * 60
     })
+}
+
+// Helper function to extract username from email
+const extractUsernameFromEmail = (email) => {
+    return email.split('@')[0];
 }
 
 const registerUser = async (req, res, next) => {
@@ -186,4 +197,90 @@ const logoutUser = async (req, res) => {
     });
 };
 
-module.exports = { registerUser, loginUser, logoutUser }
+// OAuth Google Verification and Registration/Login
+const googleOAuthVerify = async (req, res) => {
+    try {
+        const { credential } = req.body;
+
+        if (!credential) {
+            return res.status(400).json({
+                success: false,
+                message: "Google credential token is required"
+            });
+        }
+
+        try {
+            // Verify the token with Google
+            const ticket = await googleClient.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID
+            });
+
+            const payload = ticket.getPayload();
+            const email = payload.email;
+            const name = payload.name;
+            const googleId = payload.sub;
+
+            // Check if user already exists
+            let user = await User.findOne({ email: email });
+
+            if (user) {
+                // User exists - login
+                const token = generateToken(user?._id);
+
+                res.cookie("token", token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+                });
+
+                return res.status(200).json({
+                    token: token,
+                    success: true,
+                    message: "User logged in successfully with Google!",
+                    data: user,
+                });
+            } else {
+                // User doesn't exist - register them
+                const username = extractUsernameFromEmail(email);
+
+                const newUser = await User.create({
+                    name: name,
+                    email: email,
+                    username: username,
+                    googleId: googleId,
+                    authMethod: 'google'
+                });
+
+                const token = generateToken(newUser?._id);
+
+                res.cookie("token", token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+                });
+
+                return res.status(201).json({
+                    token: token,
+                    success: true,
+                    message: "New user registered successfully with Google!",
+                    data: newUser,
+                });
+            }
+        } catch (error) {
+            console.log("Google verification error:", error);
+            return res.status(401).json({
+                success: false,
+                message: "Invalid Google token or verification failed"
+            });
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "Some error occurred: " + error.message
+        });
+    }
+};
+
+module.exports = { registerUser, loginUser, logoutUser, googleOAuthVerify }

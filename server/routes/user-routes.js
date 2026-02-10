@@ -1,6 +1,6 @@
 
 const express = require("express");
-const { registerUser, loginUser,logoutUser } = require("../controllers/user-controller");
+const { registerUser, loginUser, logoutUser, googleOAuthVerify } = require("../controllers/user-controller");
 
 const {userAuthVerification} = require("../middlewares/auth-middleware");
 
@@ -11,6 +11,9 @@ router.post("/register", registerUser)
 
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
+
+// OAuth Google endpoint
+router.post("/google-oauth", googleOAuthVerify);
 
 router.post("/auth", userAuthVerification);
 

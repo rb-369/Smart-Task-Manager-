@@ -20,7 +20,7 @@ const userAuthVerification = async (req, res) => {
     if (token) {
         try {
 
-            const decoded = jwt.verify(token, "DEFAULT_SECRET_KEY");
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || "DEFAULT_SECRET_KEY");
             const curUserInfo = await User.findById(decoded.getId);
 
             if (curUserInfo) {
