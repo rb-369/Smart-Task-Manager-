@@ -18,6 +18,7 @@ Perfect for learning full-stack development and deploying production-grade appli
 ## ✨ Key Features
 
 ### 🔐 **Authentication & Security**
+- ✅ Uses Google's oauth 
 - ✅ User registration with validation
 - ✅ Secure login with JWT tokens
 - ✅ Cookie-based session management
