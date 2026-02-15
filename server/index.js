@@ -48,11 +48,17 @@ const { startNotificationScheduler } = require("./services/notification-schedule
 const rateLimiter = new RateLimiterRedis({
     storeClient: redisClient,
     keyPrefix: "middleware",
-    points: 10, // 10 requests per second (reduced from 3 for normal operations)
+    points: 100, // 100 requests per second (general API calls)
     duration: 1  // per 1 second
 })
 
+// Skip rate limiting for auth endpoints (they have their own limiter)
 app.use((req, res, next) => {
+    // Skip rate limiting for auth endpoints
+    if (req.path.startsWith("/api/user")) {
+        return next();
+    }
+
     rateLimiter.consume(req.ip).then(() => next()).catch(() => {
         logger.warn(`Rate Limit exceeded for IP: ${req.ip}`);
         return res.status(429).json({
@@ -81,7 +87,7 @@ const sensitiveEndPointsLimiter = rateLimit({
 
 })
 
-app.use("/api/user", (req, res, next) => {
+app.use("/api/user", sensitiveEndPointsLimiter, (req, res, next) => {
     req.redisClient = redisClient;
 
     next();
