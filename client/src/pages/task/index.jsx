@@ -32,7 +32,7 @@ function TaskPage() {
         const response = await getAllTasksApi(user?._id);
 
         if (response?.success) {
-            setTaskList(response?.data);
+            setTaskList(response?.data?.tasks || []);
         }
         setLoading(false);
     }

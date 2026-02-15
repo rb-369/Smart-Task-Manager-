@@ -33,7 +33,7 @@ function StatsPage() {
                 if (!isMounted) return;
 
                 if (response?.success) {
-                    setTaskList(Array.isArray(response.data) ? response.data : []);
+                    setTaskList(Array.isArray(response.data) ? response.data : response.data?.tasks || []);
                 } else {
                     setTaskList([]);
                 }

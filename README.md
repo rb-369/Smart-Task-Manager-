@@ -105,12 +105,16 @@ Perfect for learning full-stack development and deploying production-grade appli
 | Express.js | Web framework |
 | MongoDB | NoSQL database |
 | Mongoose | ODM for MongoDB |
+| Redis | In-memory caching & rate limiting |
 | JWT | Token authentication |
 | Oauth | Authentication |
 | SendGrid | Email service |
 | node-cron | Task scheduling |
 | dotenv | Environment management |
 | Cookie-parser | Cookie handling |
+| express-rate-limit | Rate limiting middleware |
+| rate-limiter-flexible | DDoS protection |
+| ioredis | Redis client |
 
 ### **Deployment**
 | Service | Component |
@@ -184,7 +188,9 @@ Smart-Task-Manager/
 - Node.js (v16+)
 - npm or yarn
 - MongoDB account (Atlas)
+- Redis (local or cloud)
 - SendGrid API key
+- Google OAuth Credentials
 
 ### **1️⃣ Clone Repository**
 ```bash
@@ -202,11 +208,19 @@ Create `.env` file:
 ```env
 PORT=5000
 MONGO_URL=your_mongodb_atlas_connection_string
+REDIS_URL=redis://localhost:6379  # For local development
+# Or use cloud Redis: redis://:password@host:port
 SENDGRID_API_KEY=your_sendgrid_api_key
 SENDER_EMAIL=your_sender_email@example.com
 TZ=Asia/Kolkata
 NODE_ENV=development
 ```
+
+**Note:** Redis is required for caching and rate limiting. For local development, install Redis via:
+- **macOS:** `brew install redis`
+- **Windows:** Download from [Redis Windows](https://github.com/microsoftarchive/redis/releases)
+- **Linux:** `sudo apt-get install redis-server`
+- **Cloud:** Use [Redis Cloud](https://redis.com/try-free/) (free tier available)
 
 Start backend:
 ```bash
@@ -327,6 +341,45 @@ POST /api/notification/trigger-reminders
 - ✅ COOP headers for OAuth popup security
 - ✅ Secure password hashing with bcryptjs
 - ✅ JWT expiration (3 days)
+
+---
+
+## ⚡ Performance & Optimization
+
+### **Redis Caching**
+- ✅ **Task Caching** - User tasks cached with Redis for fast retrieval
+  - Cache key: `task:{userId}:{page}:{limit}`
+  - TTL: 400 seconds (6.7 minutes)
+  - Automatic invalidation on create/update/delete
+- ✅ **Single Task Caching** - Individual task details cached
+  - Cache key: `task:{taskId}`
+  - TTL: 400 seconds
+- ✅ **Automatic Cache Invalidation** - All related caches cleared on mutations
+- ✅ **Cache Fallback** - Corrupted cache automatically detected and rebuilt
+
+### **Rate Limiting & DDoS Protection**
+- ✅ **Global Rate Limiter** - 10 requests/second per IP
+  - Protects against general abuse
+  - Uses Redis for distributed rate limiting
+- ✅ **Sensitive Endpoint Rate Limiter** - 50 requests per 15 minutes
+  - Applied to authentication endpoints
+  - Window: 15 minutes
+  - Prevents brute-force attacks
+- ✅ **IP-Based Tracking** - All requests tracked by client IP
+- ✅ **Graceful Rate Limit Responses** - Returns 429 status with clear messages
+
+### **Implementation Details**
+```javascript
+// Global rate limiting (10 req/s)
+RateLimiterRedis: 10 points per 1 second
+
+// Sensitive endpoints (50 req/15 min)
+rateLimit: windowMs = 15 * 60 * 1000, max = 50
+
+// Cache configuration
+setex(cacheKey, 400, JSON.stringify(data))
+// 400 second TTL for all cached data
+```
 
 ---
 

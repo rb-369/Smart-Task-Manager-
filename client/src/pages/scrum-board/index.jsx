@@ -19,7 +19,7 @@ function ScrumBoardPage() {
     async function fetchListOfTasks() {
         setLoading(true);
         const response = await getAllTasksApi(userId);
-        setTaskList(Array.isArray(response?.data) ? response.data : []);
+        setTaskList(Array.isArray(response?.data) ? response.data : response?.data?.tasks || []);
         setLoading(false);
     }
 

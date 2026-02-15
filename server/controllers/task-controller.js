@@ -3,6 +3,19 @@ const Task = require("../models/Task");
 
 const Joi = require("joi");
 
+//caching implementation here
+async function invalidatePostCache(req, input) {
+
+    const cachedKey = `task:${input}`;
+
+    await req.redisClient.del(cachedKey);
+    
+    const keys = await req.redisClient.keys("task:*");
+
+    if(keys.length >0){
+        await req.redisClient.del(...keys);
+    }
+}
 
 //add new task
 
@@ -42,6 +55,8 @@ const addNewTask = async (req, res) => {
             completedAt: status === "done" ? new Date() : null
         });
 
+        await invalidatePostCache(req, newTask._id.toString());
+
         return res.status(201).json({
             success: true,
             message: `New task "${newTask.title}" created successfully`,
@@ -62,6 +77,18 @@ const getSingleTask = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const cacheKey = `task:${id}`;
+
+    const cachedTask = await req.redisClient.get(cacheKey);
+
+    if(cachedTask){
+        return res.status(200).json({
+            success: true,
+            message: "Fetched from Cache",
+            data: JSON.parse(cachedTask)
+        })
+    }
+
     const task = await Task.findById(id);
     if (!task) {
       return res.status(404).json({
@@ -70,8 +97,11 @@ const getSingleTask = async (req, res) => {
       });
     }
 
+    await req.redisClient.setex(cacheKey, 400, JSON.stringify(task));
+
     return res.status(200).json({
       success: true,
+      message: "Fetched from DB",
       data: task
     });
 
@@ -91,7 +121,35 @@ const getAllTaks = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const tasks = await Task.find({ userId: id }).sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+
+        const limit = parseInt(req.query.limit) || 10;
+
+        const startIndex = (page-1) * limit;
+
+        const cacheKey = `task:${id}:${page}:${limit}`;
+
+        const cachedTasks = await req.redisClient.get(cacheKey);
+
+        if(cachedTasks){
+            try {
+                console.log("Fetching From Cache...");
+                const parsedData = JSON.parse(cachedTasks);
+                return res.status(200).json({
+                    success: true,
+                    message: "Fetched Tasks Successfully From Cache",
+                    data: parsedData
+                })
+            } catch (e) {
+                console.log("Cache data corrupted, fetching from DB...");
+                await req.redisClient.del(cacheKey);
+            }
+        }
+
+        const tasks = await Task.find({ userId: id })
+        .sort({ createdAt: -1 })
+        .skip(startIndex).limit(limit);
+
 
         if (!tasks) {
             return res.status(404).json({
@@ -108,11 +166,20 @@ const getAllTaks = async (req, res) => {
             })
         }
 
+        const result = {
+            tasks,
+            currentPage: page,
+            totalPages: Math.ceil(tasks.length/limit),
+            toalTasks: tasks.length
+        }
+
+        await req.redisClient.setex(cacheKey, 400, JSON.stringify(result));
+
         if (tasks.length > 0) {
             return res.status(200).json({
                 success: true,
-                message: `Fetched All taks Successfully! Total ${tasks.length} ${tasks.length === 1 ? str1 : str2} `,
-                data: tasks
+                message: `Fetched All taks Successfully From DB! Total ${tasks.length} ${tasks.length === 1 ? str1 : str2} `,
+                data: result
             })
         }
 
@@ -152,6 +219,8 @@ const updateTasks = async (req, res) => {
       { new: true }
     );
 
+    await invalidatePostCache(req, updatedTask._id.toString());
+
     return res.status(200).json({
       success: true,
       data: updatedTask
@@ -177,6 +246,8 @@ const deleteTasks = async (req, res) => {
         }
 
         const delTask = await Task.findByIdAndDelete(id);
+
+        await invalidatePostCache(req, id);
 
         if (delTask) {
             return res.status(200).json({
