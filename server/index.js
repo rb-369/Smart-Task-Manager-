@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 
@@ -41,7 +40,6 @@ app.use(
 )
 
 const redisClient = new Redis(process.env.REDIS_URL);
-
 
 app.use(cookieParser());
 app.use(express.json());
@@ -87,17 +85,17 @@ const sensitiveEndPointsLimiter = rateLimit({
 
 })
 
-app.use("/api/user",(req, res, next)=>{
+app.use("/api/user", (req, res, next) => {
     req.redisClient = redisClient;
 
     next();
 }, userRoutes);
 
-app.use("/api/tasks", (req, res, next)=>{
+app.use("/api/tasks", (req, res, next) => {
     req.redisClient = redisClient;
 
     next();
-},taskRoutes);
+}, taskRoutes);
 
 app.use("/api/notification", notificationRoutes);
 
@@ -109,11 +107,9 @@ app.use("/api", (req, res) => {
 
 const port = process.env.PORT;
 
-
-
 app.listen(port, () => {
     console.log(`App is Running on port ${port}`);
-    
+
     // Start the task notification scheduler
     startNotificationScheduler();
 })
