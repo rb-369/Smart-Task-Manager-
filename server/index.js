@@ -23,26 +23,22 @@ const taskRoutes = require("./routes/task-routes")
 
 const app = express();
 
-// Add headers middleware for COOP and cross-origin policies
-app.use((req, res, next) => {
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-    next();
-});
-
+// CORS middleware - must be before other middleware
 app.use(
     cors({
         origin: ["https://smart-task-manager-sl4a.vercel.app", "http://localhost:5173"],
-        methods: ["GET", "POST", "PUT", "DELETE"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
-        optionsSuccessStatus: 200
+        optionsSuccessStatus: 200,
+        allowedHeaders: ["Content-Type", "Authorization"]
     })
 )
 
-const redisClient = new Redis(process.env.REDIS_URL);
-
 app.use(cookieParser());
 app.use(express.json());
+
+// Initialize Redis client for caching and rate limiting
+const redisClient = new Redis(process.env.REDIS_URL);
 
 const notificationRoutes = require("./routes/notification-routes");
 const { startNotificationScheduler } = require("./services/notification-scheduler");
